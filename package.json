@@ -1,0 +1,19 @@
+{
+  "name": "gemba-fix-project",
+  "version": "1.0.0",
+  "description": "GembaFix.ai - Manufacturing Troubleshooting App with AI-powered manual search",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm start",
+    "install:all": "cd frontend && npm install",
+    "clean": "rm -rf node_modules frontend/node_modules",
+    "taskmaster": "taskmaster-ai"
+  },
+  "devDependencies": {
+    "@types/jest-axe": "^3.5.9"
+  },
+  "dependencies": {
+    "task-master-ai": "^0.18.0"
+  }
+}
