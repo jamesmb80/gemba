@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   ArrowLeftIcon,
   ChevronLeftIcon,
@@ -9,8 +9,6 @@ import {
   PrinterIcon,
 } from 'lucide-react';
 import { Document } from '../types/document';
-import * as pdfjsLib from 'pdfjs-dist';
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 interface ManualDetailProps {
   document: Document;
@@ -18,96 +16,29 @@ interface ManualDetailProps {
 }
 
 export const ManualDetail = ({ document, onBack }: ManualDetailProps) => {
-  const [pdfDoc, setPdfDoc] = useState<any>(null);
-  const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [zoomLevel, setZoomLevel] = useState(1.0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(100);
 
-  useEffect(() => {
-    if (!document) return;
-    setLoading(true);
-    setError(null);
-    setPdfDoc(null);
-    setNumPages(0);
-    setCurrentPage(1);
-    const fetchAndLoadPdf = async () => {
-      console.log('fetchAndLoadPdf: Starting...');
-      setLoading(true);
-      setError(null);
-      try {
-        console.log('fetchAndLoadPdf: Fetching PDF from:', `/api/pdf/${document.storage_path}`);
-        const response = await fetch(`/api/pdf/${document.storage_path}`);
-        console.log('fetchAndLoadPdf: Response status:', response.status);
-        if (!response.ok) {
-          console.error('fetchAndLoadPdf: Response not ok:', response.status, response.statusText);
-          throw new Error(`Failed to fetch PDF: ${response.status}`);
-        }
-        const pdfBlob = await response.blob();
-        console.log('fetchAndLoadPdf: PDF blob size:', pdfBlob.size);
-        const pdfArrayBuffer = await pdfBlob.arrayBuffer();
-        console.log('fetchAndLoadPdf: ArrayBuffer size:', pdfArrayBuffer.byteLength);
-        console.log('fetchAndLoadPdf: Loading with PDF.js...');
-        const pdfDoc = await pdfjsLib.getDocument(pdfArrayBuffer).promise;
-        console.log('fetchAndLoadPdf: PDF.js document loaded, pages:', pdfDoc.numPages);
-        setPdfDoc(pdfDoc);
-        console.log('fetchAndLoadPdf: pdfDoc state set');
-        setNumPages(pdfDoc.numPages);
-        setLoading(false);
-      } catch (err: any) {
-        console.error('fetchAndLoadPdf: Error:', err);
-        setError('Failed to load PDF: ' + (err?.message || err));
-        setLoading(false);
-      }
-    };
-    fetchAndLoadPdf();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [document]);
-
-  useEffect(() => {
-    if (!pdfDoc) {
-      console.warn('renderPage: pdfDoc not ready');
-      return;
-    }
-    if (!canvasEl) {
-      console.warn('renderPage: canvasEl not ready');
-      return;
-    }
-    let cancelled = false;
-    const renderPage = async () => {
-      setLoading(true);
-      try {
-        const page = await pdfDoc.getPage(currentPage);
-        const viewport = page.getViewport({ scale: zoomLevel });
-        const context = canvasEl.getContext('2d');
-        if (!context) {
-          console.error('Canvas context is null');
-          setError('Failed to get canvas context.');
-          setLoading(false);
-          return;
-        }
-        canvasEl.width = viewport.width;
-        canvasEl.height = viewport.height;
-        await page.render({ canvasContext: context, viewport }).promise;
-        if (!cancelled) setLoading(false);
-      } catch (err: any) {
-        if (!cancelled) {
-          console.error('PDF.js render error:', err);
-          setError('Failed to render: ' + (err?.message || err));
-          setLoading(false);
-        }
-      }
-    };
-    renderPage();
-    return () => { cancelled = true; };
-  }, [pdfDoc, canvasEl, currentPage, zoomLevel]);
-
-  const goToPrevPage = () => setCurrentPage((p) => Math.max(1, p - 1));
-  const goToNextPage = () => setCurrentPage((p) => (numPages ? Math.min(numPages, p + 1) : p + 1));
-  const zoomIn = () => setZoomLevel((z) => Math.min(z + 0.2, 3));
-  const zoomOut = () => setZoomLevel((z) => Math.max(z - 0.2, 0.5));
+  // Temporary placeholder - PDF.js disabled for now
+  const mockPdfContent = (
+    <div className="bg-white border shadow-sm rounded-sm p-8 text-sm">
+      <h1 className="text-xl font-bold mb-4">{document.filename}</h1>
+      <p className="text-gray-500 mb-4">
+        Page {currentPage} of {document.filename}
+      </p>
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold mb-2">Document Content</h2>
+        <p className="mb-2">
+          This is a placeholder for PDF content. The actual PDF viewer will be implemented once the app is running properly.
+        </p>
+        <p>
+          Document: {document.filename}<br/>
+          Uploaded: {new Date(document.uploaded_at).toLocaleString()}<br/>
+          Uploader: {document.uploader_id}
+        </p>
+      </div>
+    </div>
+  );
 
   if (!document) {
     return <div className="text-red-600">No document selected or document not found.</div>;
@@ -126,31 +57,74 @@ export const ManualDetail = ({ document, onBack }: ManualDetailProps) => {
         <h1 className="text-xl font-bold">{document.filename}</h1>
       </div>
       <div className="bg-gray-100 rounded-lg shadow-md p-4 mb-4">
-        <div className="bg-gray-300 rounded p-4 overflow-auto flex flex-col items-center justify-center" style={{ minHeight: '600px' }}>
-          <div className="relative">
-            <canvas ref={setCanvasEl} style={{ border: '1px solid #ccc', width: '100%', maxWidth: 800, background: '#fff' }} />
-            {loading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
-                <div>Loading PDF...</div>
-              </div>
-            )}
-            {error && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
-                <div className="text-red-600">{error}</div>
-              </div>
-            )}
+        {/* PDF viewer toolbar */}
+        <div className="flex justify-between items-center mb-4 bg-white p-2 rounded-md shadow-sm">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+              aria-label="Previous page"
+            >
+              <ChevronLeftIcon size={20} />
+            </button>
+            <span className="text-sm">
+              Page <span className="font-medium">{currentPage}</span> of 1
+            </span>
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              className="p-1 rounded hover:bg-gray-100"
+              aria-label="Next page"
+            >
+              <ChevronRightIcon size={20} />
+            </button>
           </div>
-          <div className="flex items-center gap-2 mt-4">
-            <button onClick={goToPrevPage} disabled={currentPage <= 1} className="p-2 rounded hover:bg-gray-200 disabled:opacity-50"><ChevronLeftIcon size={18} /></button>
-            <span>Page {currentPage} / {numPages || '?'}</span>
-            <button onClick={goToNextPage} disabled={numPages ? currentPage >= numPages : true} className="p-2 rounded hover:bg-gray-200 disabled:opacity-50"><ChevronRightIcon size={18} /></button>
-            <button onClick={zoomOut} className="p-2 rounded hover:bg-gray-200"><ZoomOutIcon size={18} /></button>
-            <button onClick={zoomIn} className="p-2 rounded hover:bg-gray-200"><ZoomInIcon size={18} /></button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setZoomLevel(Math.max(50, zoomLevel - 10))}
+              className="p-1 rounded hover:bg-gray-100"
+              aria-label="Zoom out"
+            >
+              <ZoomOutIcon size={18} />
+            </button>
+            <span className="text-sm">{zoomLevel}%</span>
+            <button
+              onClick={() => setZoomLevel(Math.min(200, zoomLevel + 10))}
+              className="p-1 rounded hover:bg-gray-100"
+              aria-label="Zoom in"
+            >
+              <ZoomInIcon size={18} />
+            </button>
+            <span className="w-px h-6 bg-gray-300 mx-1"></span>
+            <button
+              className="p-1 rounded hover:bg-gray-100"
+              aria-label="Download PDF"
+            >
+              <DownloadIcon size={18} />
+            </button>
+            <button
+              className="p-1 rounded hover:bg-gray-100"
+              aria-label="Print PDF"
+            >
+              <PrinterIcon size={18} />
+            </button>
           </div>
         </div>
-        <div className="mt-4 text-sm text-gray-600">
-          Uploaded: {new Date(document.uploaded_at).toLocaleString()}<br />
-          Uploader: {document.uploader_id}
+        {/* PDF viewer content */}
+        <div
+          className="bg-gray-300 rounded p-4 overflow-auto"
+          style={{
+            minHeight: '600px',
+          }}
+        >
+          <div
+            style={{
+              transform: `scale(${zoomLevel / 100})`,
+              transformOrigin: 'top center',
+            }}
+          >
+            {mockPdfContent}
+          </div>
         </div>
       </div>
     </div>
