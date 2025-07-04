@@ -9,36 +9,37 @@ import {
   PrinterIcon,
 } from 'lucide-react';
 import { Document } from '../types/document';
+import dynamic from 'next/dynamic';
 
 interface ManualDetailProps {
   document: Document;
   onBack: () => void;
 }
 
+const PDFViewer = dynamic(() => import('./PDFViewer'), { ssr: false });
+
 export const ManualDetail = ({ document, onBack }: ManualDetailProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [zoomLevel, setZoomLevel] = useState(100);
+  const [numPages, setNumPages] = useState<number>(0);
+  const [pdfLoading, setPdfLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Temporary placeholder - PDF.js disabled for now
-  const mockPdfContent = (
-    <div className="bg-white border shadow-sm rounded-sm p-8 text-sm">
-      <h1 className="text-xl font-bold mb-4">{document.filename}</h1>
-      <p className="text-gray-500 mb-4">
-        Page {currentPage} of {document.filename}
-      </p>
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold mb-2">Document Content</h2>
-        <p className="mb-2">
-          This is a placeholder for PDF content. The actual PDF viewer will be implemented once the app is running properly.
-        </p>
-        <p>
-          Document: {document.filename}<br/>
-          Uploaded: {new Date(document.uploaded_at).toLocaleString()}<br/>
-          Uploader: {document.uploader_id}
-        </p>
-      </div>
-    </div>
-  );
+  console.log('ManualDetail rendered with document:', document);
+  console.log('PDF URL will be:', `/api/pdf/${document?.storage_path || document?.id}`);
+
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    console.log('Document load success callback called with numPages:', numPages);
+    setNumPages(numPages);
+    setPdfLoading(false);
+    setError(null);
+  };
+
+  const onDocumentLoadError = (error: Error) => {
+    setError('Failed to load PDF document');
+    setPdfLoading(false);
+    console.error('PDF loading error:', error);
+  };
 
   if (!document) {
     return <div className="text-red-600">No document selected or document not found.</div>;
@@ -62,18 +63,19 @@ export const ManualDetail = ({ document, onBack }: ManualDetailProps) => {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
+              disabled={currentPage <= 1}
               className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
               aria-label="Previous page"
             >
               <ChevronLeftIcon size={20} />
             </button>
             <span className="text-sm">
-              Page <span className="font-medium">{currentPage}</span> of 1
+              Page <span className="font-medium">{currentPage}</span> of {numPages || 1}
             </span>
             <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              className="p-1 rounded hover:bg-gray-100"
+              onClick={() => setCurrentPage(Math.min(numPages, currentPage + 1))}
+              disabled={currentPage >= numPages}
+              className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
               aria-label="Next page"
             >
               <ChevronRightIcon size={20} />
@@ -111,20 +113,18 @@ export const ManualDetail = ({ document, onBack }: ManualDetailProps) => {
           </div>
         </div>
         {/* PDF viewer content */}
-        <div
-          className="bg-gray-300 rounded p-4 overflow-auto"
-          style={{
-            minHeight: '600px',
-          }}
-        >
-          <div
-            style={{
-              transform: `scale(${zoomLevel / 100})`,
-              transformOrigin: 'top center',
-            }}
-          >
-            {mockPdfContent}
-          </div>
+        <div className="bg-gray-300 rounded p-4 overflow-auto" style={{ minHeight: '600px' }}>
+          {error ? (
+            <div className="text-center p-8 text-red-600">{error}</div>
+          ) : (
+            <PDFViewer
+              file={`/api/pdf/${document.storage_path || document.id}`}
+              pageNumber={currentPage}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={onDocumentLoadError}
+              zoomLevel={zoomLevel}
+            />
+          )}
         </div>
       </div>
     </div>

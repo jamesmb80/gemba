@@ -3,6 +3,28 @@ description: Guidelines for creating and maintaining Cursor rules to ensure cons
 globs: .cursor/rules/*.mdc
 alwaysApply: true
 ---
+- **MANDATORY: Log every debugging/fix attempt in [FIXES.md](mdc:FIXES.md) BEFORE and AFTER making any code changes**
+  - Before attempting any fix, read FIXES.md to check for previous attempts
+  - Create a new entry using the required template before making any code or config changes
+  - After testing, update the same entry with the outcome, side effects, lessons learned, and next steps
+  - Be specific about the problem, root cause, solution, and files changed
+  - Include error messages and testing steps
+  - Example entry:
+    ```
+    ## 2024-06-30 - PDF Viewer - ATTEMPTED ⏳
+    **Problem:** PDF viewer shows placeholder instead of content
+    **Root Cause:** PDF.js integration disabled in ManualDetail.tsx
+    **Attempted Solution:** Restore react-pdf imports and PDFDocument component
+    **Reasoning:** PDF.js dependencies are installed and Babel config supports private methods
+    **Code Changes:** frontend/src/components/ManualDetail.tsx, frontend/src/components/PDFViewer.tsx
+    **Testing Steps:** Navigate to Machine → Manual → Click document, verify PDF loads
+    **Outcome:** [TO BE UPDATED]
+    **Side Effects:** [TO BE UPDATED]
+    **Lessons Learned:** [TO BE UPDATED]
+    **Next Steps:** [TO BE UPDATED]
+    ```
+  - This rule applies to ALL debugging, fixes, and refactors in this project
+  - Do NOT skip or delay FIXES.md logging—this is required for every chat and every fix
 
 - **Required Rule Structure:**
   ```markdown
