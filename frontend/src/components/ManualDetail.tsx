@@ -40,6 +40,10 @@ export const ManualDetail = ({ document, onBack }: ManualDetailProps) => {
     return <div className="text-red-600">No document selected or document not found.</div>;
   }
 
+  if (!document.storage_path) {
+    return <div className="text-red-600">Document storage path is missing. Cannot load PDF.</div>;
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="flex items-center mb-4">
@@ -107,7 +111,7 @@ export const ManualDetail = ({ document, onBack }: ManualDetailProps) => {
             <div className="text-center p-8 text-red-600">{error}</div>
           ) : (
             <PDFViewer
-              file={`/api/pdf/${document.storage_path || document.id}`}
+              file={`/api/pdf/${document.storage_path}`}
               pageNumber={currentPage}
               onLoadSuccess={onDocumentLoadSuccess}
               onLoadError={onDocumentLoadError}

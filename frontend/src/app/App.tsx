@@ -80,12 +80,17 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    fetchMachines();
-  }, []);
+    // Only fetch machines after authentication is verified and user is authenticated
+    if (authChecked && isAuthenticated) {
+      fetchMachines();
+    }
+  }, [authChecked, isAuthenticated]);
 
   // Add a handler for login success
   const handleLoginSuccess = () => {
     setCurrentScreen('home');
+    // Refresh machines after successful login
+    fetchMachines();
   };
 
   // Add a handler for register success

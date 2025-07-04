@@ -51,6 +51,16 @@ export interface Machine {
 }
 
 export async function getMachines(): Promise<Machine[]> {
+  // Check if user is authenticated first
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) {
+    console.error('Session error:', sessionError);
+    throw new Error('Authentication required');
+  }
+  if (!session) {
+    throw new Error('Authentication required');
+  }
+  
   const { data, error } = await supabase
     .from('machines')
     .select('*')
@@ -63,12 +73,20 @@ export async function getMachines(): Promise<Machine[]> {
 }
 
 export async function addMachine(machine: Machine): Promise<Machine> {
+  // Check authentication
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Authentication required');
+  
   const { data, error } = await supabase.from('machines').insert([machine]).select().single();
   if (error) throw error;
   return data as Machine;
 }
 
 export async function updateMachine(id: string, updates: Partial<Machine>): Promise<Machine> {
+  // Check authentication
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Authentication required');
+  
   const { data, error } = await supabase
     .from('machines')
     .update(updates)
@@ -80,6 +98,10 @@ export async function updateMachine(id: string, updates: Partial<Machine>): Prom
 }
 
 export async function deleteMachine(id: string): Promise<boolean> {
+  // Check authentication
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Authentication required');
+  
   const { error } = await supabase.from('machines').delete().eq('id', id);
   if (error) throw error;
   return true;
