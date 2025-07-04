@@ -93,16 +93,10 @@ export const ManualDetail = ({ document, onBack }: ManualDetailProps) => {
               <ZoomInIcon size={18} />
             </button>
             <span className="w-px h-6 bg-gray-300 mx-1"></span>
-            <button
-              className="p-1 rounded hover:bg-gray-100"
-              aria-label="Download PDF"
-            >
+            <button className="p-1 rounded hover:bg-gray-100" aria-label="Download PDF">
               <DownloadIcon size={18} />
             </button>
-            <button
-              className="p-1 rounded hover:bg-gray-100"
-              aria-label="Print PDF"
-            >
+            <button className="p-1 rounded hover:bg-gray-100" aria-label="Print PDF">
               <PrinterIcon size={18} />
             </button>
           </div>

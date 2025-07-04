@@ -11,7 +11,11 @@ interface SessionHistoryProps {
   onBack: () => void;
 }
 
-export const SessionHistory: React.FC<SessionHistoryProps> = ({ machine, onSelectSession, onBack }) => {
+export const SessionHistory: React.FC<SessionHistoryProps> = ({
+  machine,
+  onSelectSession,
+  onBack,
+}) => {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,7 +40,11 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({ machine, onSelec
     // Real-time subscription
     const subscription = supabase
       .channel('public:chat_sessions')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_sessions' }, fetchSessions)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'chat_sessions' },
+        fetchSessions,
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(subscription);
@@ -58,7 +66,11 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({ machine, onSelec
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="flex items-center mb-4">
-        <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-100 mr-2" aria-label="Go back">
+        <button
+          onClick={onBack}
+          className="p-2 rounded-full hover:bg-gray-100 mr-2"
+          aria-label="Go back"
+        >
           <ArrowLeftIcon size={20} />
         </button>
         <h1 className="text-xl font-bold">Session History</h1>

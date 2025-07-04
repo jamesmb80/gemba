@@ -36,7 +36,13 @@ export const MachineDashboard: React.FC<MachineDashboardProps> = ({ machine, onS
     <div className="p-4 max-w-4xl mx-auto">
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
         <div className="h-48 overflow-hidden">
-          <Image src={machine.image || '/placeholder.png'} alt={machine.name} className="w-full h-full object-cover" width={800} height={192} />
+          <Image
+            src={machine.image || '/placeholder.png'}
+            alt={machine.name}
+            className="w-full h-full object-cover"
+            width={800}
+            height={192}
+          />
         </div>
         <div className="p-4">
           <div className="flex justify-between items-center">

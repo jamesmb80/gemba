@@ -14,4 +14,4 @@ export interface ChatMessage {
   text: string;
   confidence?: string;
   timestamp: string;
-} 
+}

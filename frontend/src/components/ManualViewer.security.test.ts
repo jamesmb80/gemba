@@ -10,4 +10,4 @@ describe('Document RLS Security', () => {
     // expect(error).toBeNull();
     expect(true).toBe(true); // Placeholder assertion
   });
-}); 
+});

@@ -31,7 +31,7 @@ const PasswordResetForm: React.FC = () => {
         <input
           type="email"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded"
           required
         />
@@ -49,4 +49,4 @@ const PasswordResetForm: React.FC = () => {
   );
 };
 
-export default PasswordResetForm; 
+export default PasswordResetForm;

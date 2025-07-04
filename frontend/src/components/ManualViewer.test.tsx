@@ -8,12 +8,14 @@ jest.mock('../lib/supabaseClient', () => ({
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     order: jest.fn().mockReturnThis(),
-    then: jest.fn().mockImplementation(cb => cb({ data: [], error: null })),
+    then: jest.fn().mockImplementation((cb) => cb({ data: [], error: null })),
   },
 }));
 
 jest.mock('pdfjs-dist/build/pdf', () => ({
-  getDocument: jest.fn().mockReturnValue({ promise: Promise.resolve({ numPages: 1, getPage: jest.fn() }) }),
+  getDocument: jest
+    .fn()
+    .mockReturnValue({ promise: Promise.resolve({ numPages: 1, getPage: jest.fn() }) }),
 }));
 jest.mock('pdfjs-dist/build/pdf.worker.entry', () => {});
 
@@ -26,7 +28,7 @@ describe('ManualViewer', () => {
         machine={{ id: '1', name: 'Test Machine' }}
         onSelectManual={jest.fn()}
         onBack={jest.fn()}
-      />
+      />,
     );
     expect(screen.getByText(/Upload Documents/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Search documentation/i)).toBeInTheDocument();
@@ -38,8 +40,8 @@ describe('ManualViewer', () => {
         machine={{ id: '1', name: 'Test Machine' }}
         onSelectManual={jest.fn()}
         onBack={jest.fn()}
-      />
+      />,
     );
     expect(screen.getByText(/No documents found/i)).toBeInTheDocument();
   });
-}); 
+});

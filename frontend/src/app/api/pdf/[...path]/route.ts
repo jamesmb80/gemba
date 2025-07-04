@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: { path: string
     return NextResponse.json({ error: 'Invalid path parameter' }, { status: 400 });
   }
 
-  if (!pathArray.length || pathArray.some(seg => !seg)) {
+  if (!pathArray.length || pathArray.some((seg) => !seg)) {
     return NextResponse.json({ error: 'Missing or malformed PDF path' }, { status: 400 });
   }
 
@@ -31,7 +31,10 @@ export async function GET(req: NextRequest, { params }: { params: { path: string
   const { data, error } = await supabase.storage.from(bucket).createSignedUrl(objectKey, 3600);
   if (error) {
     console.error('Supabase createSignedUrl error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to create signed URL' }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || 'Failed to create signed URL' },
+      { status: 500 },
+    );
   }
   if (!data?.signedUrl) {
     return NextResponse.json({ error: 'Signed URL is undefined' }, { status: 500 });
@@ -41,13 +44,16 @@ export async function GET(req: NextRequest, { params }: { params: { path: string
   const pdfRes = await fetch(data.signedUrl, {
     headers: {
       'User-Agent': 'Mozilla/5.0',
-      'Accept': 'application/pdf',
+      Accept: 'application/pdf',
     },
   });
   if (!pdfRes.ok) {
     const errorText = await pdfRes.text();
     console.error('Supabase fetch error:', pdfRes.status, errorText);
-    return NextResponse.json({ error: 'Failed to fetch PDF from Supabase', status: pdfRes.status, details: errorText }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Failed to fetch PDF from Supabase', status: pdfRes.status, details: errorText },
+      { status: 400 },
+    );
   }
 
   // Remove problematic headers and return the PDF
@@ -61,4 +67,4 @@ export async function GET(req: NextRequest, { params }: { params: { path: string
       // Do NOT include X-Frame-Options or CSP headers
     },
   });
-} 
+}

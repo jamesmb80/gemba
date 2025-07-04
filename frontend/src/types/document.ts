@@ -12,4 +12,4 @@ export interface Document {
   file_size?: number;
   processed_at?: string;
   error_message?: string;
-} 
+}

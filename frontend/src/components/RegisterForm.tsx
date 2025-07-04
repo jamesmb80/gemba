@@ -34,7 +34,7 @@ const RegisterForm: React.FC<{ onRegisterSuccess?: () => void }> = ({ onRegister
         <input
           type="email"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded"
           required
         />
@@ -44,7 +44,7 @@ const RegisterForm: React.FC<{ onRegisterSuccess?: () => void }> = ({ onRegister
         <input
           type="password"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded"
           required
         />
@@ -62,4 +62,4 @@ const RegisterForm: React.FC<{ onRegisterSuccess?: () => void }> = ({ onRegister
   );
 };
 
-export default RegisterForm; 
+export default RegisterForm;

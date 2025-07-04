@@ -12,9 +12,9 @@ jest.mock('../lib/supabaseClient', () => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
           order: jest.fn(() => ({
-            then: (cb: any) => cb({ data: [], error: null })
-          }))
-        }))
+            then: (cb: any) => cb({ data: [], error: null }),
+          })),
+        })),
       })),
     })),
   },
@@ -29,9 +29,9 @@ describe('ManualViewer accessibility', () => {
         machine={{ id: '1', name: 'Test Machine' }}
         onSelectManual={jest.fn()}
         onBack={jest.fn()}
-      />
+      />,
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
-}); 
+});

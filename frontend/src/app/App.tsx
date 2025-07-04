@@ -311,13 +311,10 @@ export function App() {
 
   // If not authenticated, only allow auth screens
   if (!isAuthenticated) {
-    if (["login", "register", "reset-password"].includes(currentScreen)) {
+    if (['login', 'register', 'reset-password'].includes(currentScreen)) {
       return (
         <div className="flex flex-col w-full min-h-screen bg-slate-100">
-          <Header
-            breadcrumbs={breadcrumbs}
-            onNavigate={(screen: string) => navigateTo(screen)}
-          />
+          <Header breadcrumbs={breadcrumbs} onNavigate={(screen: string) => navigateTo(screen)} />
           <main className="flex-1 w-full">{renderScreen()}</main>
         </div>
       );
@@ -325,10 +322,7 @@ export function App() {
     // Default to login
     return (
       <div className="flex flex-col w-full min-h-screen bg-slate-100">
-        <Header
-          breadcrumbs={breadcrumbs}
-          onNavigate={(screen: string) => navigateTo(screen)}
-        />
+        <Header breadcrumbs={breadcrumbs} onNavigate={(screen: string) => navigateTo(screen)} />
         <main className="flex-1 w-full">
           <LoginForm onLoginSuccess={handleLoginSuccess} />
         </main>
@@ -343,9 +337,24 @@ export function App() {
         onNavigate={(screen: string) => navigateTo(screen)}
         loginButton={
           <>
-            <button onClick={() => setCurrentScreen('login')} className="ml-4 px-3 py-1 bg-blue-700 text-white rounded">Login</button>
-            <button onClick={() => setCurrentScreen('register')} className="ml-2 px-3 py-1 bg-green-700 text-white rounded">Register</button>
-            <button onClick={() => setCurrentScreen('reset-password')} className="ml-2 px-3 py-1 bg-yellow-600 text-white rounded">Reset Password</button>
+            <button
+              onClick={() => setCurrentScreen('login')}
+              className="ml-4 px-3 py-1 bg-blue-700 text-white rounded"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => setCurrentScreen('register')}
+              className="ml-2 px-3 py-1 bg-green-700 text-white rounded"
+            >
+              Register
+            </button>
+            <button
+              onClick={() => setCurrentScreen('reset-password')}
+              className="ml-2 px-3 py-1 bg-yellow-600 text-white rounded"
+            >
+              Reset Password
+            </button>
           </>
         }
       />

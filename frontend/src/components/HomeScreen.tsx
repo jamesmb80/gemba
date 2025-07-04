@@ -11,7 +11,13 @@ interface HomeScreenProps {
   onAddMachine: (machine: Machine) => void;
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ machines, loading = false, error = null, onSelectMachine, onAddMachine }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({
+  machines,
+  loading = false,
+  error = null,
+  onSelectMachine,
+  onAddMachine,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAddMachine = () => {
@@ -39,11 +45,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ machines, loading = fals
     return (
       <div className="flex flex-col items-center justify-center h-[80vh] p-4">
         <span className="text-red-600 text-xl font-bold mb-2">{error}</span>
-        <button onClick={handleAddMachine} className="bg-blue-800 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center mt-4">
+        <button
+          onClick={handleAddMachine}
+          className="bg-blue-800 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center mt-4"
+        >
           <PlusIcon size={18} className="mr-2" />
           Add Machine
         </button>
-        <AddMachineModal isOpen={isModalOpen} onClose={handleCloseModal} onSubmit={handleSubmitMachine} />
+        <AddMachineModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSubmit={handleSubmitMachine}
+        />
       </div>
     );
   }

@@ -19,7 +19,13 @@ function highlightMatch(text: string, term: string) {
   if (!term) return text;
   const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
   return text.split(regex).map((part, i) =>
-    regex.test(part) ? <mark key={i} className="bg-yellow-200 px-0.5 rounded">{part}</mark> : part
+    regex.test(part) ? (
+      <mark key={i} className="bg-yellow-200 px-0.5 rounded">
+        {part}
+      </mark>
+    ) : (
+      part
+    ),
   );
 }
 
@@ -54,7 +60,10 @@ export const ManualViewer = ({ machine, onSelectManual, onBack }: ManualViewerPr
   const [fileTypeFilter, setFileTypeFilter] = useState<string>('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [processingQueue, setProcessingQueue] = useState<Document[]>([]);
-  const [queueProgress, setQueueProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
+  const [queueProgress, setQueueProgress] = useState<{ current: number; total: number }>({
+    current: 0,
+    total: 0,
+  });
 
   if (!machine) {
     return (
@@ -88,7 +97,7 @@ export const ManualViewer = ({ machine, onSelectManual, onBack }: ManualViewerPr
           data
             .map((doc: Document) => doc.filename)
             .filter((name: string) => name.toLowerCase().includes(searchTerm.toLowerCase()))
-            .slice(0, 5)
+            .slice(0, 5),
         );
       } else {
         setSuggestions([]);
@@ -114,28 +123,37 @@ export const ManualViewer = ({ machine, onSelectManual, onBack }: ManualViewerPr
       const files = e.target.files;
       if (!files || files.length === 0) throw new Error('No file selected');
       const maxFileSize = 50 * 1024 * 1024; // 50MB
-      const validFiles = Array.from(files).filter(f => f.type === 'application/pdf' && f.size <= maxFileSize);
-      const tooLargeFiles = Array.from(files).filter(f => f.size > maxFileSize);
+      const validFiles = Array.from(files).filter(
+        (f) => f.type === 'application/pdf' && f.size <= maxFileSize,
+      );
+      const tooLargeFiles = Array.from(files).filter((f) => f.size > maxFileSize);
       if (tooLargeFiles.length > 0) {
         setUploadError('Some files exceed the 50MB size limit and were skipped.');
       }
-      if (validFiles.length === 0) throw new Error('No valid PDF files to upload (check file type and size).');
+      if (validFiles.length === 0)
+        throw new Error('No valid PDF files to upload (check file type and size).');
       const uploadedDocs: Document[] = [];
       for (const file of validFiles) {
         // Sanitize filename: replace spaces with underscores and remove problematic characters
         const safeName = file.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '');
         const storagePath = `${machine.id}/${Date.now()}_${safeName}`;
-        const { error: uploadError } = await supabase.storage.from('documents').upload(storagePath, file);
+        const { error: uploadError } = await supabase.storage
+          .from('documents')
+          .upload(storagePath, file);
         if (uploadError) throw uploadError;
         // Insert metadata into documents table
         const user = supabase.auth.getUser ? (await supabase.auth.getUser()).data.user : null;
-        const { data: inserted, error: dbError } = await supabase.from('documents').insert({
-          machine_id: machine.id,
-          uploader_id: user?.id || null,
-          filename: file.name,
-          storage_path: storagePath,
-          processing_status: 'pending',
-        }).select().single();
+        const { data: inserted, error: dbError } = await supabase
+          .from('documents')
+          .insert({
+            machine_id: machine.id,
+            uploader_id: user?.id || null,
+            filename: file.name,
+            storage_path: storagePath,
+            processing_status: 'pending',
+          })
+          .select()
+          .single();
         if (dbError) throw dbError;
         uploadedDocs.push(inserted);
       }
@@ -145,7 +163,10 @@ export const ManualViewer = ({ machine, onSelectManual, onBack }: ManualViewerPr
       setProcessingStatus('Processing PDF(s)...');
       for (let i = 0; i < uploadedDocs.length; i++) {
         try {
-          await withTimeout(processPDFDocument(uploadedDocs[i].id, uploadedDocs[i].storage_path), 60000);
+          await withTimeout(
+            processPDFDocument(uploadedDocs[i].id, uploadedDocs[i].storage_path),
+            60000,
+          );
         } catch (err: any) {
           // Continue processing next file
         }
@@ -192,7 +213,7 @@ export const ManualViewer = ({ machine, onSelectManual, onBack }: ManualViewerPr
   const filteredDocuments = documents.filter(
     (doc) =>
       doc.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (doc.extracted_text && doc.extracted_text.toLowerCase().includes(searchTerm.toLowerCase()))
+      (doc.extracted_text && doc.extracted_text.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   return (
@@ -211,7 +232,14 @@ export const ManualViewer = ({ machine, onSelectManual, onBack }: ManualViewerPr
         <label className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md cursor-pointer">
           <UploadIcon size={18} className="mr-2" />
           {uploading ? 'Uploading...' : 'Upload Documents'}
-          <input type="file" accept="application/pdf" onChange={handleUploadDocuments} className="hidden" disabled={uploading} multiple />
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={handleUploadDocuments}
+            className="hidden"
+            disabled={uploading}
+            multiple
+          />
         </label>
       </div>
       {uploadError && <div className="text-red-600 mt-2">{uploadError}</div>}
@@ -277,7 +305,9 @@ export const ManualViewer = ({ machine, onSelectManual, onBack }: ManualViewerPr
           <div className="space-y-3">
             {filteredDocuments.map((doc) => {
               const matchInTitle = doc.filename.toLowerCase().includes(searchTerm.toLowerCase());
-              const matchInText = doc.extracted_text && doc.extracted_text.toLowerCase().includes(searchTerm.toLowerCase());
+              const matchInText =
+                doc.extracted_text &&
+                doc.extracted_text.toLowerCase().includes(searchTerm.toLowerCase());
               const snippet = matchInText ? getSnippet(doc.extracted_text!, searchTerm) : '';
               return (
                 <button
@@ -296,26 +326,40 @@ export const ManualViewer = ({ machine, onSelectManual, onBack }: ManualViewerPr
                       </p>
                       {snippet && (
                         <p className="text-xs text-gray-700 mt-1">
-                          <span className="font-semibold">Excerpt:</span> {highlightMatch(snippet, searchTerm)}
+                          <span className="font-semibold">Excerpt:</span>{' '}
+                          {highlightMatch(snippet, searchTerm)}
                         </p>
                       )}
                       {doc.processing_status && (
                         <p className="text-xs mt-1">
-                          Status: <span className={
-                            doc.processing_status === 'completed' ? 'text-green-600' :
-                            doc.processing_status === 'processing' ? 'text-blue-600' :
-                            doc.processing_status === 'failed' ? 'text-red-600' : 'text-gray-600'
-                          }>{doc.processing_status}</span>
-                          {doc.processing_status === 'completed' && doc.page_count !== undefined && (
-                            <span className="ml-2 text-gray-500">Pages: {doc.page_count}</span>
-                          )}
+                          Status:{' '}
+                          <span
+                            className={
+                              doc.processing_status === 'completed'
+                                ? 'text-green-600'
+                                : doc.processing_status === 'processing'
+                                  ? 'text-blue-600'
+                                  : doc.processing_status === 'failed'
+                                    ? 'text-red-600'
+                                    : 'text-gray-600'
+                            }
+                          >
+                            {doc.processing_status}
+                          </span>
+                          {doc.processing_status === 'completed' &&
+                            doc.page_count !== undefined && (
+                              <span className="ml-2 text-gray-500">Pages: {doc.page_count}</span>
+                            )}
                           {doc.processing_status === 'failed' && doc.error_message && (
                             <span className="ml-2 text-red-600">Error: {doc.error_message}</span>
                           )}
                           {doc.processing_status === 'failed' && (
                             <button
                               className="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
-                              onClick={e => { e.stopPropagation(); handleRetryProcessing(doc); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRetryProcessing(doc);
+                              }}
                               disabled={processing}
                             >
                               {processing ? 'Retrying...' : 'Retry'}

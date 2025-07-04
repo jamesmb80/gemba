@@ -63,11 +63,7 @@ export async function getMachines(): Promise<Machine[]> {
 }
 
 export async function addMachine(machine: Machine): Promise<Machine> {
-  const { data, error } = await supabase
-    .from('machines')
-    .insert([machine])
-    .select()
-    .single();
+  const { data, error } = await supabase.from('machines').insert([machine]).select().single();
   if (error) throw error;
   return data as Machine;
 }
@@ -84,10 +80,7 @@ export async function updateMachine(id: string, updates: Partial<Machine>): Prom
 }
 
 export async function deleteMachine(id: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('machines')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from('machines').delete().eq('id', id);
   if (error) throw error;
   return true;
 }
@@ -110,7 +103,10 @@ export interface ChatMessage {
 }
 
 // Create a new chat session
-export async function createChatSession(machine_id: string, user_id?: string): Promise<ChatSession> {
+export async function createChatSession(
+  machine_id: string,
+  user_id?: string,
+): Promise<ChatSession> {
   const { data, error } = await supabase
     .from('chat_sessions')
     .insert([{ machine_id, user_id }])
@@ -121,7 +117,10 @@ export async function createChatSession(machine_id: string, user_id?: string): P
 }
 
 // Get chat sessions for a machine (optionally filtered by user)
-export async function getChatSessions(machine_id: string, user_id?: string): Promise<ChatSession[]> {
+export async function getChatSessions(
+  machine_id: string,
+  user_id?: string,
+): Promise<ChatSession[]> {
   let query = supabase
     .from('chat_sessions')
     .select('*')
@@ -145,12 +144,10 @@ export async function getChatMessages(session_id: string): Promise<ChatMessage[]
 }
 
 // Add a message to a session
-export async function addChatMessage(message: Omit<ChatMessage, 'id' | 'timestamp'>): Promise<ChatMessage> {
-  const { data, error } = await supabase
-    .from('chat_messages')
-    .insert([message])
-    .select()
-    .single();
+export async function addChatMessage(
+  message: Omit<ChatMessage, 'id' | 'timestamp'>,
+): Promise<ChatMessage> {
+  const { data, error } = await supabase.from('chat_messages').insert([message]).select().single();
   if (error) throw error;
   return data as ChatMessage;
 }
@@ -167,7 +164,7 @@ export async function sendMessageToAI({
 }): Promise<{ text: string; confidence: 'high' | 'medium' | 'low' }> {
   // Compose system prompt with machine context
   const systemPrompt = `You are an expert troubleshooting assistant for the following machine: ${machine.name}. Use the context below to help the user. Be concise, clear, and helpful.`;
-  
+
   // Compose messages for Anthropic API
   const messages = [
     { role: 'system', content: systemPrompt },
@@ -204,7 +201,7 @@ export async function sendMessageToAI({
   } catch (error) {
     console.error('Anthropic API error:', error);
     return {
-      text: 'I apologize, but I\'m having trouble connecting to my AI service right now. Please try again later or check the machine manual for assistance.',
+      text: "I apologize, but I'm having trouble connecting to my AI service right now. Please try again later or check the machine manual for assistance.",
       confidence: 'low' as const,
     };
   }

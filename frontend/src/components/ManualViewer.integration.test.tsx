@@ -11,9 +11,9 @@ jest.mock('../lib/supabaseClient', () => {
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
             order: jest.fn(() => ({
-              then: (cb: any) => cb({ data: docs, error: null })
-            }))
-          }))
+              then: (cb: any) => cb({ data: docs, error: null }),
+            })),
+          })),
         })),
         insert: jest.fn(() => ({
           then: (cb: any) => {
@@ -26,10 +26,10 @@ jest.mock('../lib/supabaseClient', () => {
               uploaded_at: new Date().toISOString(),
             });
             return cb({ data: docs, error: null });
-          }
-        }))
-      }))
-    }
+          },
+        })),
+      })),
+    },
   };
 });
 
@@ -37,9 +37,13 @@ jest.mock('pdfjs-dist/build/pdf', () => ({
   getDocument: jest.fn(() => ({
     promise: Promise.resolve({
       numPages: 1,
-      getPage: jest.fn(() => Promise.resolve({ getTextContent: () => Promise.resolve({ items: [{ str: 'Test PDF content' }] }) }))
-    })
-  }))
+      getPage: jest.fn(() =>
+        Promise.resolve({
+          getTextContent: () => Promise.resolve({ items: [{ str: 'Test PDF content' }] }),
+        }),
+      ),
+    }),
+  })),
 }));
 jest.mock('pdfjs-dist/build/pdf.worker.entry', () => {});
 
@@ -50,7 +54,7 @@ describe('ManualViewer integration', () => {
         machine={{ id: '1', name: 'Test Machine' }}
         onSelectManual={jest.fn()}
         onBack={jest.fn()}
-      />
+      />,
     );
     const file = new File(['dummy content'], 'manual.pdf', { type: 'application/pdf' });
     // Mock arrayBuffer for JSDOM
@@ -61,4 +65,4 @@ describe('ManualViewer integration', () => {
     fireEvent.change(input, { target: { files: [file] } });
     await waitFor(() => expect(screen.getByText('manual.pdf')).toBeInTheDocument());
   });
-}); 
+});

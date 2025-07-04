@@ -31,7 +31,7 @@ const LoginForm: React.FC<{ onLoginSuccess?: () => void }> = ({ onLoginSuccess }
         <input
           type="email"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded"
           required
         />
@@ -41,7 +41,7 @@ const LoginForm: React.FC<{ onLoginSuccess?: () => void }> = ({ onLoginSuccess }
         <input
           type="password"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded"
           required
         />
@@ -58,4 +58,4 @@ const LoginForm: React.FC<{ onLoginSuccess?: () => void }> = ({ onLoginSuccess }
   );
 };
 
-export default LoginForm; 
+export default LoginForm;
