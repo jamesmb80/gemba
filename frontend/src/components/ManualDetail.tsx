@@ -25,11 +25,7 @@ export const ManualDetail = ({ document, onBack }: ManualDetailProps) => {
   const [pdfLoading, setPdfLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log('ManualDetail rendered with document:', document);
-  console.log('PDF URL will be:', `/api/pdf/${document?.storage_path || document?.id}`);
-
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    console.log('Document load success callback called with numPages:', numPages);
     setNumPages(numPages);
     setPdfLoading(false);
     setError(null);
@@ -38,7 +34,6 @@ export const ManualDetail = ({ document, onBack }: ManualDetailProps) => {
   const onDocumentLoadError = (error: Error) => {
     setError('Failed to load PDF document');
     setPdfLoading(false);
-    console.error('PDF loading error:', error);
   };
 
   if (!document) {

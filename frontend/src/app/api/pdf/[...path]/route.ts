@@ -20,14 +20,8 @@ export async function GET(req: NextRequest, { params }: { params: { path: string
   const bucket = 'documents';
   const objectKey = pathArray.join('/');
 
-  // Debug log
-  console.log('=== PDF API Route Debug ===');
-  console.log('Full request URL:', req.url);
-  console.log('Params received:', params);
-  console.log('Path array:', pathArray);
-  console.log('Supabase bucket:', bucket, 'Object key:', objectKey);
-  console.log('Supabase URL (from env):', process.env.NEXT_PUBLIC_SUPABASE_URL);
-  console.log('Supabase Service Role Key (from env):', process.env.SUPABASE_SERVICE_ROLE_KEY ? '***set***' : '***missing***');
+  // Log only essential info in production
+  console.log(`PDF API: Fetching ${objectKey} from ${bucket} bucket`);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;

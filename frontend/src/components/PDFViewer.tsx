@@ -1,9 +1,10 @@
 import React from 'react';
 import { Document as PDFDocument, Page as PDFPage, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
 
-pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
+// Use CDN for exact version match
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 export default function PDFViewer({
   file,
@@ -18,10 +19,7 @@ export default function PDFViewer({
   onLoadError: (error: Error) => void;
   zoomLevel: number;
 }) {
-  console.log('PDFViewer rendering with file:', file, 'pageNumber:', pageNumber);
-
   const handleLoadSuccess = (info: { numPages: number }) => {
-    console.log('PDF loaded successfully:', info);
     onLoadSuccess(info);
   };
 
@@ -36,15 +34,19 @@ export default function PDFViewer({
         file={file}
         onLoadSuccess={handleLoadSuccess}
         onLoadError={handleLoadError}
-        loading={<div className="text-center p-4">Loading PDF... (file: {file})</div>}
-        error={<div className="text-center p-4 text-red-600">Failed to load PDF from {file}</div>}
+        loading={<div className="text-center p-4">Loading PDF...</div>}
+        error={<div className="text-center p-4 text-red-600">Failed to load PDF. Please try again.</div>}
+        options={{
+          cMapUrl: 'https://unpkg.com/pdfjs-dist@3.11.174/cmaps/',
+          cMapPacked: true,
+        }}
       >
         <PDFPage
           pageNumber={pageNumber}
           renderTextLayer={true}
           renderAnnotationLayer={true}
-          loading={<div className="text-center p-2">Loading page {pageNumber}...</div>}
-          error={<div className="text-center p-2 text-red-600">Failed to load page {pageNumber}</div>}
+          loading={<div className="text-center p-2">Loading page...</div>}
+          error={<div className="text-center p-2 text-red-600">Failed to load page</div>}
         />
       </PDFDocument>
     </div>
