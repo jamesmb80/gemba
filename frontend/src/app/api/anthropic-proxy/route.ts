@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     // Create the properly formatted request for Anthropic
     const anthropicRequest = {
       model: 'claude-sonnet-4-20250514',
-      max_tokens: requestBody.max_tokens || 256,
+      max_tokens: requestBody.max_tokens || 1024, // Increased for richer context responses
       temperature: requestBody.temperature || 0.2,
       messages: filteredMessages,
       ...(systemMessage && { system: systemMessage }), // Add system as top-level parameter

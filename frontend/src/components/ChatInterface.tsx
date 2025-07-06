@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { MicIcon, SendIcon, ArrowLeftIcon, VolumeIcon, Volume2Icon } from 'lucide-react';
+import { MicIcon, SendIcon, ArrowLeftIcon, VolumeIcon, Volume2Icon, BookOpenIcon, HistoryIcon } from 'lucide-react';
 import { LoadingSpinner } from './ui/LoadingSpinner';
 import {
   getChatSessions,
@@ -25,6 +25,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ machine, onBack })
   const [isProcessing, setIsProcessing] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contextSources, setContextSources] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   // Load or create chat session and fetch messages
@@ -77,11 +78,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ machine, onBack })
       const savedUserMsg = await addChatMessage(userMsg);
       setMessages((prev) => [...prev, savedUserMsg]);
       setInputValue('');
-      // Call AI API
+      // Call AI API with session context
       const aiResponse = await sendMessageToAI({
         userMessage: savedUserMsg.text,
         machine,
         conversation: [...messages, savedUserMsg].map((m) => ({ sender: m.sender, text: m.text })),
+        sessionId: session.id,
       });
       // Add AI message
       const aiMsg: Omit<ChatMessage, 'id' | 'timestamp'> = {
@@ -92,6 +94,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ machine, onBack })
       };
       const savedAiMsg = await addChatMessage(aiMsg);
       setMessages((prev) => [...prev, savedAiMsg]);
+      
+      // Update context sources if available
+      if (aiResponse.sources) {
+        setContextSources(aiResponse.sources);
+      }
+      
       // Text-to-speech if enabled
       if (audioEnabled) {
         const utterance = new window.SpeechSynthesisUtterance(aiResponse.text);
@@ -105,14 +113,45 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ machine, onBack })
   };
 
   const handleRecord = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      setError('Speech recognition not supported in this browser');
+      return;
+    }
+
+    if (isRecording) return;
+
     setIsRecording(true);
-    // Simulate voice recording for 3 seconds (placeholder, can be replaced with real voice input)
-    setTimeout(() => {
+    setError(null);
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    
+    recognition.onstart = () => {
+      setInputValue('');
+    };
+    
+    recognition.onresult = (event) => {
+      if (event.results.length > 0) {
+        const transcript = event.results[0][0].transcript;
+        setInputValue(transcript);
+      }
+    };
+    
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setError(`Speech recognition error: ${event.error}`);
       setIsRecording(false);
-      setInputValue(
-        'The machine is making a loud grinding noise when starting up and displaying error code E-394.',
-      );
-    }, 3000);
+    };
+    
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+    
+    recognition.start();
   };
 
   // Render confidence indicator
@@ -172,6 +211,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ machine, onBack })
           {audioEnabled ? <Volume2Icon size={20} /> : <VolumeIcon size={20} />}
         </button>
       </div>
+      
+      {/* Context sources indicator */}
+      {contextSources.length > 0 && (
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-3 text-sm">
+          <div className="flex items-center">
+            <BookOpenIcon size={16} className="mr-2 text-blue-600" />
+            <span className="font-medium text-blue-800">Context from manuals:</span>
+          </div>
+          <div className="mt-1 text-blue-700">
+            {contextSources.join(', ')}
+          </div>
+        </div>
+      )}
+      
       {/* Chat messages */}
       <div className="flex-1 bg-gray-50 p-4 overflow-y-auto">
         {error && <div className="mb-4 text-red-600 font-semibold">{error}</div>}

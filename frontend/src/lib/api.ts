@@ -174,18 +174,43 @@ export async function addChatMessage(
   return data as ChatMessage;
 }
 
-// Send a message to the AI API (Anthropic Claude)
+// Send a message to the AI API (Anthropic Claude) with enhanced context
 export async function sendMessageToAI({
   userMessage,
   machine,
   conversation,
+  sessionId,
 }: {
   userMessage: string;
   machine: Machine;
   conversation: Array<{ sender: string; text: string }>;
-}): Promise<{ text: string; confidence: 'high' | 'medium' | 'low' }> {
-  // Compose system prompt with machine context
-  const systemPrompt = `You are an expert troubleshooting assistant for the following machine: ${machine.name}. Use the context below to help the user. Be concise, clear, and helpful.`;
+  sessionId?: string;
+}): Promise<{ text: string; confidence: 'high' | 'medium' | 'low'; sources?: string[] }> {
+  // Import context service dynamically to avoid circular imports
+  const { ContextService } = await import('./contextService');
+  
+  // Get relevant context from manuals and chat history
+  const context = await ContextService.getContextForQuery(
+    machine.id || '',
+    userMessage,
+    sessionId
+  );
+
+  // Compose enhanced system prompt with machine context and retrieved information
+  let systemPrompt = `You are an expert troubleshooting assistant for the following machine: ${machine.name}.`;
+  
+  // Add machine details if available
+  if (machine.type) systemPrompt += ` Type: ${machine.type}.`;
+  if (machine.serial_number) systemPrompt += ` Serial: ${machine.serial_number}.`;
+  if (machine.department) systemPrompt += ` Department: ${machine.department}.`;
+  
+  systemPrompt += ` Use the context below to help the user. Be concise, clear, and helpful.`;
+  
+  // Add formatted context from manuals and chat history
+  const formattedContext = ContextService.formatContextForAI(context);
+  if (formattedContext) {
+    systemPrompt += '\n\n' + formattedContext;
+  }
 
   // Compose messages for Anthropic API
   const messages = [
@@ -206,7 +231,7 @@ export async function sendMessageToAI({
       body: JSON.stringify({
         messages,
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 256,
+        max_tokens: 1024,
         temperature: 0.2,
       }),
     });
@@ -216,15 +241,21 @@ export async function sendMessageToAI({
     }
 
     const data = await response.json();
+    
+    // Extract sources from context for reference
+    const sources = context.manualExcerpts.map(excerpt => excerpt.filename);
+    
     return {
       text: data.content[0].text,
-      confidence: 'medium' as const,
+      confidence: context.relevanceScore > 50 ? 'high' : context.relevanceScore > 20 ? 'medium' : 'low',
+      sources: sources.length > 0 ? sources : undefined,
     };
   } catch (error) {
     console.error('Anthropic API error:', error);
     return {
       text: "I apologize, but I'm having trouble connecting to my AI service right now. Please try again later or check the machine manual for assistance.",
       confidence: 'low' as const,
+      sources: undefined,
     };
   }
 }

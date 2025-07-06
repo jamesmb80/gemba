@@ -1,417 +1,346 @@
-# Task Master AI - Claude Code Integration Guide
+# GembaFix Manufacturing App - Claude Code Development Guide
+
+## Project Overview
+
+GembaFix is a modern manufacturing troubleshooting application that helps technicians resolve equipment issues through AI-powered chat assistance and comprehensive manual management.
+
+**Key Features:**
+- Machine management and monitoring
+- AI-powered troubleshooting chat interface
+- PDF manual viewer with full-text search
+- Session history tracking and export
+- Real-time updates via Supabase
+- User authentication system
+
+## Tech Stack
+
+- **Frontend**: Next.js 14, React 18, TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: Supabase (PostgreSQL)
+- **PDF Processing**: react-pdf v10 with PDF.js
+- **State Management**: Zustand
+- **Testing**: Jest (unit), Playwright (e2e)
+- **Icons**: Lucide React
+
+## Project Structure
+
+```
+GembaFix/
+├── frontend/
+│   ├── src/
+│   │   ├── app/                 # Next.js app router
+│   │   │   ├── api/            # API routes
+│   │   │   ├── globals.css     # Global styles
+│   │   │   └── page.tsx        # Main pages
+│   │   ├── components/         # React components
+│   │   ├── lib/               # Utilities and API clients
+│   │   ├── types/             # TypeScript definitions
+│   │   └── data/              # Constants and mock data
+│   ├── public/                # Static assets
+│   └── package.json          # Dependencies and scripts
+├── package.json              # Root package.json
+├── .mcp.json                # MCP server configuration
+├── FIXES.md                  # Debug history and lessons learned
+└── .cursor/                  # Cursor-specific rules and config
+```
+
+## 🚨 CRITICAL RULES FOR CLAUDE CODE
+
+### 1. MANDATORY: Debug Logging in FIXES.md
+**BEFORE and AFTER every debugging/fix attempt, you MUST update FIXES.md**
+
+- **Before Starting**: Check FIXES.md for previous attempts on similar issues
+- **Create Entry**: Add a new entry with the template BEFORE making changes
+- **Update Entry**: After testing, update with outcome, side effects, and lessons learned
+
+Example entry:
+```markdown
+## 2024-07-04 - PDF Viewer - ATTEMPTED ⏳
+**Problem:** PDF viewer shows placeholder instead of content
+**Root Cause:** PDF.js integration disabled in ManualDetail.tsx
+**Attempted Solution:** Restore react-pdf imports and PDFDocument component
+**Reasoning:** PDF.js dependencies are installed and Babel config supports private methods
+**Code Changes:** frontend/src/components/ManualDetail.tsx, frontend/src/components/PDFViewer.tsx
+**Testing Steps:** Navigate to Machine → Manual → Click document, verify PDF loads
+**Outcome:** [TO BE UPDATED]
+**Side Effects:** [TO BE UPDATED]
+**Lessons Learned:** [TO BE UPDATED]
+**Next Steps:** [TO BE UPDATED]
+```
+
+### 2. Environment File Protection
+**NEVER edit environment files directly - they contain sensitive configuration**
+
+- ❌ **Never use Edit on `.env*` files**
+- ❌ **Never overwrite environment files with placeholders**
+- ❌ **Never create environment files with real API keys**
+- ❌ **Never modify `.mcp.json` files directly**
+
+✅ **Instead:**
+```bash
+# Show user what to add
+echo "Please add your API key to frontend/.env.local:"
+echo "SUPABASE_SERVICE_ROLE_KEY=your-actual-key-here"
+```
+
+### 3. Safety Rules - Critical for Beginners
+
+- **NEVER perform bulk deletions** without explicit file review
+- **Always create backup commits** before major changes
+- **Test after EVERY change**, not after multiple changes
+- **Never delete files matching patterns** like "* 2.tsx" without review
+- **Always use Read before Edit** to understand current state
+- **Prefer editing existing files** over creating new ones
+
+### 4. Debugging Workflow Rules
+
+1. **System First**: Check system logs, time, and environment before assuming code is broken
+2. **Structured Approach**: API → Auth → Frontend → Rendering
+3. **Add Logging**: Insert detailed logging before attempting fixes
+4. **For Auth Errors**: Always verify system time first (JWT issues)
+5. **For Browser Issues**: Check DevTools Network and Console tabs
+6. **Use MCP Tools**: Leverage Playwright to see actual browser state
+
+### 5. Testing & Verification Commands
+
+After any code change, run this verification sequence:
+```bash
+cd frontend
+npm run format        # Fix formatting
+npm run lint          # Check for linting errors
+npm run type-check    # Verify TypeScript
+npm run build         # Ensure production build works
+```
+
+**IMPORTANT**: If any command fails, fix it before proceeding!
+
+### 6. React & Next.js Specific Rules
+
+- **Browser-only libraries**: Always use dynamic imports with `ssr: false`
+- **React Refs**: Verify refs are not null before using them
+- **Circular Dependencies**: Check for circular state dependencies
+- **Callback Refs**: Use for timing-sensitive operations
+- **PDF.js Integration**: Ensure worker file exists in public/
+
+Example for browser-only imports:
+```typescript
+// ✅ DO: Dynamic import for browser-only libraries
+const PDFViewer = dynamic(() => import('./PDFViewer'), { ssr: false });
+
+// ❌ DON'T: Direct import of browser-only libraries
+import { Document, Page } from 'react-pdf';
+```
+
+### 7. File Management Rules
+
+- **Always use absolute paths** starting from project root
+- **Frontend paths**: Always include `frontend/` prefix
+- **Read before Edit**: Use Read tool to verify current content
+- **No unnecessary files**: Don't create documentation unless requested
+- **Check patterns**: Review existing code patterns before implementing
+
+### 8. Communication & Workflow
+
+- **Explain before changing**: Tell user WHAT will change and WHY
+- **Use TodoWrite**: Track multi-step operations with the todo tool
+- **Progress updates**: Provide updates during long operations
+- **Ask when uncertain**: Better to ask than assume
+- **Reference line numbers**: Use `file:line` format (e.g., `ManualDetail.tsx:45`)
 
 ## Essential Commands
 
-### Core Workflow Commands
-
 ```bash
-# Project Setup
-task-master init                                    # Initialize Task Master in current project
-task-master parse-prd .taskmaster/docs/prd.txt      # Generate tasks from PRD document
-task-master models --setup                        # Configure AI models interactively
+# Development
+cd frontend && npm run dev              # Start dev server (http://localhost:3000)
+npm run build                          # Production build
+npm run type-check                     # TypeScript checking
 
-# Daily Development Workflow
-task-master list                                   # Show all tasks with status
-task-master next                                   # Get next available task to work on
-task-master show <id>                             # View detailed task information (e.g., task-master show 1.2)
-task-master set-status --id=<id> --status=done    # Mark task complete
+# Code Quality (RUN AFTER EVERY CHANGE)
+npm run lint                           # ESLint
+npm run format                         # Prettier formatting
+npm run format:check                   # Check formatting
 
-# Task Management
-task-master add-task --prompt="description" --research        # Add new task with AI assistance
-task-master expand --id=<id> --research --force              # Break task into subtasks
-task-master update-task --id=<id> --prompt="changes"         # Update specific task
-task-master update --from=<id> --prompt="changes"            # Update multiple tasks from ID onwards
-task-master update-subtask --id=<id> --prompt="notes"        # Add implementation notes to subtask
+# Testing
+npm run test                           # Jest unit tests
+npm run test:unit                      # Jest with coverage
+npm run test:e2e                       # Playwright e2e tests
+npm run test:a11y                      # Accessibility tests
 
-# Analysis & Planning
-task-master analyze-complexity --research          # Analyze task complexity
-task-master complexity-report                      # View complexity analysis
-task-master expand --all --research               # Expand all eligible tasks
-
-# Dependencies & Organization
-task-master add-dependency --id=<id> --depends-on=<id>       # Add task dependency
-task-master move --from=<id> --to=<id>                       # Reorganize task hierarchy
-task-master validate-dependencies                            # Check for dependency issues
-task-master generate                                         # Update task markdown files (usually auto-called)
+# Quick Verification Sequence
+npm run format && npm run lint && npm run type-check && npm run build
 ```
 
-## Key Files & Project Structure
+## Environment Setup
 
-### Core Files
-
-- `.taskmaster/tasks/tasks.json` - Main task data file (auto-managed)
-- `.taskmaster/config.json` - AI model configuration (use `task-master models` to modify)
-- `.taskmaster/docs/prd.txt` - Product Requirements Document for parsing
-- `.taskmaster/tasks/*.txt` - Individual task files (auto-generated from tasks.json)
-- `.env` - API keys for CLI usage
-
-### Claude Code Integration Files
-
-- `CLAUDE.md` - Auto-loaded context for Claude Code (this file)
-- `.claude/settings.json` - Claude Code tool allowlist and preferences
-- `.claude/commands/` - Custom slash commands for repeated workflows
-- `.mcp.json` - MCP server configuration (project-specific)
-
-### Directory Structure
-
-```
-project/
-├── .taskmaster/
-│   ├── tasks/              # Task files directory
-│   │   ├── tasks.json      # Main task database
-│   │   ├── task-1.md      # Individual task files
-│   │   └── task-2.md
-│   ├── docs/              # Documentation directory
-│   │   ├── prd.txt        # Product requirements
-│   ├── reports/           # Analysis reports directory
-│   │   └── task-complexity-report.json
-│   ├── templates/         # Template files
-│   │   └── example_prd.txt  # Example PRD template
-│   └── config.json        # AI models & settings
-├── .claude/
-│   ├── settings.json      # Claude Code configuration
-│   └── commands/         # Custom slash commands
-├── .env                  # API keys
-├── .mcp.json            # MCP configuration
-└── CLAUDE.md            # This file - auto-loaded by Claude Code
+Required environment variables in `frontend/.env.local`:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
-## MCP Integration
+**IMPORTANT**: Never commit these files. Ask user to add their own keys.
 
-Task Master provides an MCP server that Claude Code can connect to. Configure in `.mcp.json`:
+## Test User Credentials
 
-```json
-{
-  "mcpServers": {
-    "task-master-ai": {
-      "command": "npx",
-      "args": ["-y", "--package=task-master-ai", "task-master-ai"],
-      "env": {
-        "ANTHROPIC_API_KEY": "your_key_here",
-        "PERPLEXITY_API_KEY": "your_key_here",
-        "OPENAI_API_KEY": "OPENAI_API_KEY_HERE",
-        "GOOGLE_API_KEY": "GOOGLE_API_KEY_HERE",
-        "XAI_API_KEY": "XAI_API_KEY_HERE",
-        "OPENROUTER_API_KEY": "OPENROUTER_API_KEY_HERE",
-        "MISTRAL_API_KEY": "MISTRAL_API_KEY_HERE",
-        "AZURE_OPENAI_API_KEY": "AZURE_OPENAI_API_KEY_HERE",
-        "OLLAMA_API_KEY": "OLLAMA_API_KEY_HERE"
-      }
-    }
-  }
-}
+For testing and development purposes:
+```
+Email: james@example.com
+Password: Password
 ```
 
-### Essential MCP Tools
+**Note**: Use these credentials for comprehensive testing of authenticated features.
 
-```javascript
-help; // = shows available taskmaster commands
-// Project setup
-initialize_project; // = task-master init
-parse_prd; // = task-master parse-prd
+## Key Files and Directories
 
-// Daily workflow
-get_tasks; // = task-master list
-next_task; // = task-master next
-get_task; // = task-master show <id>
-set_task_status; // = task-master set-status
+### Core Application
+- `frontend/src/app/page.tsx` - Main application entry point
+- `frontend/src/components/ChatInterface.tsx` - AI chat functionality
+- `frontend/src/components/ManualViewer.tsx` - PDF manual viewer
+- `frontend/src/components/PDFViewer.tsx` - PDF rendering component
+- `frontend/src/lib/supabaseClient.ts` - Supabase configuration
+- `frontend/src/lib/api.ts` - API client functions
+- `FIXES.md` - **CHECK THIS FIRST** for debugging history
 
-// Task management
-add_task; // = task-master add-task
-expand_task; // = task-master expand
-update_task; // = task-master update-task
-update_subtask; // = task-master update-subtask
-update; // = task-master update
+### API Routes
+- `frontend/src/app/api/anthropic-proxy/route.ts` - AI chat proxy
+- `frontend/src/app/api/pdf/[...path]/route.ts` - PDF serving
 
-// Analysis
-analyze_project_complexity; // = task-master analyze-complexity
-complexity_report; // = task-master complexity-report
+### Configuration
+- `frontend/next.config.js` - Next.js configuration
+- `frontend/tailwind.config.js` - Tailwind CSS setup
+- `frontend/tsconfig.json` - TypeScript configuration
+- `frontend/jest.config.js` - Test configuration
+
+## Development Workflow
+
+### Starting Development
+1. `cd frontend && npm install`
+2. Set up environment variables (ask user to add keys)
+3. `npm run dev`
+4. Visit http://localhost:3000
+
+### Before Making Changes
+1. **Read FIXES.md** to check for previous attempts
+2. **Use Read tool** to understand current code
+3. **Create FIXES.md entry** before starting
+4. **Plan changes** using TodoWrite tool
+
+### After Making Changes
+1. Run verification sequence: `npm run format && npm run lint && npm run type-check && npm run build`
+2. Test the actual user flow
+3. Update FIXES.md entry with outcome
+4. Check browser console for errors
+
+## Code Conventions
+
+- **TypeScript**: All new code must be TypeScript
+- **Components**: Functional components with hooks
+- **Styling**: Tailwind CSS classes, avoid inline styles
+- **State**: Zustand for global state, useState for local
+- **API**: Async/await pattern, proper error handling
+- **Testing**: Test-driven development preferred
+- **Comments**: Avoid unnecessary comments, code should be self-documenting
+
+## Claude Code MCP Integration
+
+This project is configured with MCP (Model Context Protocol) servers for enhanced development capabilities:
+
+### Available MCP Servers
+- **Supabase**: Database operations and management
+  - Execute SQL queries
+  - Manage database schema
+  - Handle migrations
+  - Monitor logs and performance
+  - Check auth errors with `get_logs`
+- **Playwright**: Browser automation and testing
+  - Run E2E tests
+  - Debug UI interactions
+  - Generate test scenarios
+  - Take screenshots for debugging
+  - Check console errors
+
+### MCP Best Practices
+1. **Use Playwright** to verify UI changes actually work
+2. **Check Supabase logs** when auth or API calls fail
+3. **Take screenshots** before/after major UI changes
+4. **Monitor console** for JavaScript errors
+5. **Verify database state** matches UI expectations
+
+Example MCP usage:
+```typescript
+// Check Supabase auth logs
+mcp__supabase__get_logs({ service: "auth" })
+
+// Take screenshot of current UI
+mcp__playwright__browser_take_screenshot({ filename: "before-change.png" })
+
+// Check browser console for errors
+mcp__playwright__browser_console_messages()
 ```
 
-## Claude Code Workflow Integration
-
-### Standard Development Workflow
-
-#### 1. Project Initialization
-
-```bash
-# Initialize Task Master
-task-master init
-
-# Create or obtain PRD, then parse it
-task-master parse-prd .taskmaster/docs/prd.txt
-
-# Analyze complexity and expand tasks
-task-master analyze-complexity --research
-task-master expand --all --research
-```
-
-If tasks already exist, another PRD can be parsed (with new information only!) using parse-prd with --append flag. This will add the generated tasks to the existing list of tasks..
-
-#### 2. Daily Development Loop
-
-```bash
-# Start each session
-task-master next                           # Find next available task
-task-master show <id>                     # Review task details
-
-# During implementation, check in code context into the tasks and subtasks
-task-master update-subtask --id=<id> --prompt="implementation notes..."
-
-# Complete tasks
-task-master set-status --id=<id> --status=done
-```
-
-#### 3. Multi-Claude Workflows
-
-For complex projects, use multiple Claude Code sessions:
-
-```bash
-# Terminal 1: Main implementation
-cd project && claude
-
-# Terminal 2: Testing and validation
-cd project-test-worktree && claude
-
-# Terminal 3: Documentation updates
-cd project-docs-worktree && claude
-```
-
-### Custom Slash Commands
-
-Create `.claude/commands/taskmaster-next.md`:
-
-```markdown
-Find the next available Task Master task and show its details.
-
-Steps:
-
-1. Run `task-master next` to get the next task
-2. If a task is available, run `task-master show <id>` for full details
-3. Provide a summary of what needs to be implemented
-4. Suggest the first implementation step
-```
-
-Create `.claude/commands/taskmaster-complete.md`:
-
-```markdown
-Complete a Task Master task: $ARGUMENTS
-
-Steps:
-
-1. Review the current task with `task-master show $ARGUMENTS`
-2. Verify all implementation is complete
-3. Run any tests related to this task
-4. Mark as complete: `task-master set-status --id=$ARGUMENTS --status=done`
-5. Show the next available task with `task-master next`
-```
-
-## Tool Allowlist Recommendations
-
-Add to `.claude/settings.json`:
-
-```json
-{
-  "allowedTools": [
-    "Edit",
-    "Bash(task-master *)",
-    "Bash(git commit:*)",
-    "Bash(git add:*)",
-    "Bash(npm run *)",
-    "mcp__task_master_ai__*"
-  ]
-}
-```
-
-## Configuration & Setup
-
-### API Keys Required
-
-At least **one** of these API keys must be configured:
-
-- `ANTHROPIC_API_KEY` (Claude models) - **Recommended**
-- `PERPLEXITY_API_KEY` (Research features) - **Highly recommended**
-- `OPENAI_API_KEY` (GPT models)
-- `GOOGLE_API_KEY` (Gemini models)
-- `MISTRAL_API_KEY` (Mistral models)
-- `OPENROUTER_API_KEY` (Multiple models)
-- `XAI_API_KEY` (Grok models)
-
-An API key is required for any provider used across any of the 3 roles defined in the `models` command.
-
-### Model Configuration
-
-```bash
-# Interactive setup (recommended)
-task-master models --setup
-
-# Set specific models
-task-master models --set-main claude-3-5-sonnet-20241022
-task-master models --set-research perplexity-llama-3.1-sonar-large-128k-online
-task-master models --set-fallback gpt-4o-mini
-```
-
-## Task Structure & IDs
-
-### Task ID Format
-
-- Main tasks: `1`, `2`, `3`, etc.
-- Subtasks: `1.1`, `1.2`, `2.1`, etc.
-- Sub-subtasks: `1.1.1`, `1.1.2`, etc.
-
-### Task Status Values
-
-- `pending` - Ready to work on
-- `in-progress` - Currently being worked on
-- `done` - Completed and verified
-- `deferred` - Postponed
-- `cancelled` - No longer needed
-- `blocked` - Waiting on external factors
-
-### Task Fields
-
-```json
-{
-  "id": "1.2",
-  "title": "Implement user authentication",
-  "description": "Set up JWT-based auth system",
-  "status": "pending",
-  "priority": "high",
-  "dependencies": ["1.1"],
-  "details": "Use bcrypt for hashing, JWT for tokens...",
-  "testStrategy": "Unit tests for auth functions, integration tests for login flow",
-  "subtasks": []
-}
-```
-
-## Claude Code Best Practices with Task Master
-
-### Context Management
-
-- Use `/clear` between different tasks to maintain focus
-- This CLAUDE.md file is automatically loaded for context
-- Use `task-master show <id>` to pull specific task context when needed
-
-### Iterative Implementation
-
-1. `task-master show <subtask-id>` - Understand requirements
-2. Explore codebase and plan implementation
-3. `task-master update-subtask --id=<id> --prompt="detailed plan"` - Log plan
-4. `task-master set-status --id=<id> --status=in-progress` - Start work
-5. Implement code following logged plan
-6. `task-master update-subtask --id=<id> --prompt="what worked/didn't work"` - Log progress
-7. `task-master set-status --id=<id> --status=done` - Complete task
-
-### Complex Workflows with Checklists
-
-For large migrations or multi-step processes:
-
-1. Create a markdown PRD file describing the new changes: `touch task-migration-checklist.md` (prds can be .txt or .md)
-2. Use Taskmaster to parse the new prd with `task-master parse-prd --append` (also available in MCP)
-3. Use Taskmaster to expand the newly generated tasks into subtasks. Consdier using `analyze-complexity` with the correct --to and --from IDs (the new ids) to identify the ideal subtask amounts for each task. Then expand them.
-4. Work through items systematically, checking them off as completed
-5. Use `task-master update-subtask` to log progress on each task/subtask and/or updating/researching them before/during implementation if getting stuck
-
-### Git Integration
-
-Task Master works well with `gh` CLI:
-
-```bash
-# Create PR for completed task
-gh pr create --title "Complete task 1.2: User authentication" --body "Implements JWT auth system as specified in task 1.2"
-
-# Reference task in commits
-git commit -m "feat: implement JWT auth (task 1.2)"
-```
-
-### Parallel Development with Git Worktrees
-
-```bash
-# Create worktrees for parallel task development
-git worktree add ../project-auth feature/auth-system
-git worktree add ../project-api feature/api-refactor
-
-# Run Claude Code in each worktree
-cd ../project-auth && claude    # Terminal 1: Auth work
-cd ../project-api && claude     # Terminal 2: API work
-```
-
-## Troubleshooting
-
-### AI Commands Failing
-
-```bash
-# Check API keys are configured
-cat .env                           # For CLI usage
-
-# Verify model configuration
-task-master models
-
-# Test with different model
-task-master models --set-fallback gpt-4o-mini
-```
-
-### MCP Connection Issues
-
-- Check `.mcp.json` configuration
-- Verify Node.js installation
-- Use `--mcp-debug` flag when starting Claude Code
-- Use CLI as fallback if MCP unavailable
-
-### Task File Sync Issues
-
-```bash
-# Regenerate task files from tasks.json
-task-master generate
-
-# Fix dependency issues
-task-master fix-dependencies
-```
-
-DO NOT RE-INITIALIZE. That will not do anything beyond re-adding the same Taskmaster core files.
-
-## Important Notes
-
-### AI-Powered Operations
-
-These commands make AI calls and may take up to a minute:
-
-- `parse_prd` / `task-master parse-prd`
-- `analyze_project_complexity` / `task-master analyze-complexity`
-- `expand_task` / `task-master expand`
-- `expand_all` / `task-master expand --all`
-- `add_task` / `task-master add-task`
-- `update` / `task-master update`
-- `update_task` / `task-master update-task`
-- `update_subtask` / `task-master update-subtask`
-
-### File Management
-
-- Never manually edit `tasks.json` - use commands instead
-- Never manually edit `.taskmaster/config.json` - use `task-master models`
-- Task markdown files in `tasks/` are auto-generated
-- Run `task-master generate` after manual changes to tasks.json
-
-### Claude Code Session Management
-
-- Use `/clear` frequently to maintain focused context
-- Create custom slash commands for repeated Task Master workflows
-- Configure tool allowlist to streamline permissions
-- Use headless mode for automation: `claude -p "task-master next"`
-
-### Multi-Task Updates
-
-- Use `update --from=<id>` to update multiple future tasks
-- Use `update-task --id=<id>` for single task updates
-- Use `update-subtask --id=<id>` for implementation logging
-
-### Research Mode
-
-- Add `--research` flag for research-based AI enhancement
-- Requires a research model API key like Perplexity (`PERPLEXITY_API_KEY`) in environment
-- Provides more informed task creation and updates
-- Recommended for complex technical tasks
+## Common Issues & Solutions
+
+### PDF Viewer
+- Uses react-pdf v10 with PDF.js worker
+- Worker file: `public/pdf.worker.min.js`
+- Handle loading states and errors properly
+- Check for circular dependencies in state
+
+### Supabase Integration
+- Client-side: `@supabase/supabase-js` with anon key
+- Server-side: Service role key for admin operations
+- Real-time subscriptions for live updates
+- JWT errors often mean system time is wrong
+
+### Build Issues
+- Next.js 14 app router patterns
+- TypeScript strict mode enabled
+- Proper import/export syntax required
+- Dynamic imports for browser-only code
+
+### Authentication Issues
+1. **Check system time** - JWT tokens are time-sensitive
+2. **Verify environment variables** are loaded
+3. **Check Supabase logs** for specific errors
+4. **Service role key** only for server-side operations
+
+## Debugging Checklist
+
+When something doesn't work:
+
+1. ✅ **Check FIXES.md** for similar issues
+2. ✅ **Verify system time** is correct
+3. ✅ **Check browser console** for errors
+4. ✅ **Check Network tab** for failed requests
+5. ✅ **Add console.log** statements to trace execution
+6. ✅ **Use MCP tools** to inspect state
+7. ✅ **Run build** to catch compile errors
+8. ✅ **Test in incognito** to rule out cache issues
+9. ✅ **Update FIXES.md** with findings
+
+## Lessons from Project History
+
+Based on this project's development:
+
+1. **Bulk deletions are dangerous** - Lost entire project once
+2. **System time affects auth** - JWT tokens fail with wrong time
+3. **React refs can be null** - Always check before using
+4. **PDF.js needs careful setup** - Worker file and version matching
+5. **Service role key is powerful** - Only use server-side
+6. **Test one change at a time** - Easier to debug
+7. **Git is your safety net** - Commit before risky changes
+
+## Important Reminders
+
+- 🚨 **Always update FIXES.md before and after changes**
+- 🔒 **Never edit .env files directly**
+- 🧪 **Test after every single change**
+- 📝 **Use TodoWrite to track complex tasks**
+- 🔍 **Read existing code before creating new files**
+- ✅ **Run the verification sequence before committing**
+- 💬 **Ask user when uncertain about requirements**
 
 ---
 
-_This guide ensures Claude Code has immediate access to Task Master's essential functionality for agentic development workflows._
+This guide provides Claude Code with essential context and rules for safe, efficient development on the GembaFix manufacturing troubleshooting application. When in doubt, check FIXES.md and ask the user!

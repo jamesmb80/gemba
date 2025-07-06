@@ -98,6 +98,20 @@ export function App() {
     setCurrentScreen('login');
   };
 
+  // Add a handler for logout
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setCurrentScreen('home');
+      setMachines([]);
+      setSelectedMachine(null);
+      setSelectedSession(null);
+      setSelectedDocument(null);
+    } catch (err: any) {
+      console.error('Logout error:', err);
+    }
+  };
+
   // Machine CRUD handlers
   const handleAddMachine = async (machine: Machine) => {
     try {
@@ -340,28 +354,8 @@ export function App() {
       <Header
         breadcrumbs={breadcrumbs}
         onNavigate={(screen: string) => navigateTo(screen)}
-        loginButton={
-          <>
-            <button
-              onClick={() => setCurrentScreen('login')}
-              className="ml-4 px-3 py-1 bg-blue-700 text-white rounded"
-            >
-              Login
-            </button>
-            <button
-              onClick={() => setCurrentScreen('register')}
-              className="ml-2 px-3 py-1 bg-green-700 text-white rounded"
-            >
-              Register
-            </button>
-            <button
-              onClick={() => setCurrentScreen('reset-password')}
-              className="ml-2 px-3 py-1 bg-yellow-600 text-white rounded"
-            >
-              Reset Password
-            </button>
-          </>
-        }
+        isAuthenticated={isAuthenticated}
+        onLogout={handleLogout}
       />
       <main className="flex-1 w-full">{renderScreen()}</main>
     </div>

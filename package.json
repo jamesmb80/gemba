@@ -7,13 +7,9 @@
     "build": "cd frontend && npm run build",
     "start": "cd frontend && npm start",
     "install:all": "cd frontend && npm install",
-    "clean": "rm -rf node_modules frontend/node_modules",
-    "taskmaster": "taskmaster-ai"
+    "clean": "rm -rf node_modules frontend/node_modules"
   },
   "devDependencies": {
     "@types/jest-axe": "^3.5.9"
-  },
-  "dependencies": {
-    "task-master-ai": "^0.18.0"
   }
 }

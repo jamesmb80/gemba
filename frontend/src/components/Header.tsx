@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserIcon } from 'lucide-react';
+import { UserIcon, LogOutIcon } from 'lucide-react';
 
 interface Breadcrumb {
   name: string;
@@ -10,9 +10,11 @@ interface HeaderProps {
   breadcrumbs: Breadcrumb[];
   onNavigate: (screen: string) => void;
   loginButton?: React.ReactNode;
+  onLogout?: () => void;
+  isAuthenticated?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ breadcrumbs, onNavigate, loginButton }) => {
+export const Header: React.FC<HeaderProps> = ({ breadcrumbs, onNavigate, loginButton, onLogout, isAuthenticated }) => {
   return (
     <header className="bg-blue-900 text-white p-4 shadow-md">
       <div className="flex justify-between items-center">
@@ -35,10 +37,27 @@ export const Header: React.FC<HeaderProps> = ({ breadcrumbs, onNavigate, loginBu
           </nav>
         </div>
         <div className="flex items-center space-x-2">
-          <button className="p-2 rounded-full bg-blue-800 hover:bg-blue-700">
-            <UserIcon size={20} />
-          </button>
-          {loginButton}
+          {isAuthenticated ? (
+            <>
+              <button className="p-2 rounded-full bg-blue-800 hover:bg-blue-700">
+                <UserIcon size={20} />
+              </button>
+              <button
+                onClick={onLogout}
+                className="flex items-center px-3 py-1 bg-red-700 text-white rounded hover:bg-red-600"
+              >
+                <LogOutIcon size={16} className="mr-1" />
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="p-2 rounded-full bg-blue-800 hover:bg-blue-700">
+                <UserIcon size={20} />
+              </button>
+              {loginButton}
+            </>
+          )}
         </div>
       </div>
       <nav className="md:hidden mt-2">
