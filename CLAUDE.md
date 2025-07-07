@@ -147,6 +147,93 @@ import { Document, Page } from 'react-pdf';
 - **Ask when uncertain**: Better to ask than assume
 - **Reference line numbers**: Use `file:line` format (e.g., `ManualDetail.tsx:45`)
 
+### 9. 🚨 MANDATORY: Attention-Required Notifications
+
+**Claude Code MUST notify the user when their attention is required - NO EXCEPTIONS**
+
+Use the `attention` command (with sound + voice + bell) when:
+- **User input is needed** to proceed
+- **Approval required** before making changes
+- **Blocked by error** that prevents continuation
+- **All tasks completed** and waiting for next instruction
+- **Decision needed** between multiple options
+
+**DO NOT notify for**:
+- Individual task completions
+- Successful operations that continue automatically
+- Intermediate progress updates
+
+**Required Notification Format:**
+```bash
+# ATTENTION REQUIRED (use these - they make sound!)
+./gembafix-notify attention "user input" "Review 3 changes before proceeding"
+./gembafix-notify attention "approval needed" "Ready to create GitHub issue - proceed?"
+./gembafix-notify attention "blocked" "Cannot continue - missing API key"
+./gembafix-notify attention "complete" "All tasks finished - awaiting instructions"
+
+# Regular alerts (visual only - use sparingly)
+./gembafix-notify alert "info" "Starting code analysis..."
+```
+
+**ENFORCEMENT**: Failure to notify when attention is required violates core instructions.
+
+**Testing & Troubleshooting:**
+```bash
+./gembafix-notify test          # Test both notification types
+./gembafix-notify sounds        # List available sounds
+./gembafix-notify voices        # List available voices
+./gembafix-notify help          # Full troubleshooting guide
+```
+
+### 10. 🚨 MANDATORY: GitHub Workflow & Project Management
+
+**GitHub Projects Board Workflow - 6 Stage Kanban:**
+
+1. **Backlog** - New issues from CCI command
+2. **Research** - AI research and specification phase
+3. **Ready** - Human-reviewed and approved
+4. **In Progress** - Active development
+5. **Review** - Code review and testing
+6. **Done** - Completed and merged
+
+**Required Commit/Push Strategy:**
+```bash
+# MANDATORY: Push after major task completions to main branch
+git add .
+git commit -m "feat: implement user authentication - resolves #12"
+git push origin main
+```
+
+**Major Task Completion Triggers (MUST push):**
+- ✅ **Complete feature implementation** (working end-to-end)
+- ✅ **Bug fix with verification** (issue resolved + tested)  
+- ✅ **Successful build + all tests passing** (full verification sequence)
+- ✅ **Milestone completion** (Phase completion, major refactor)
+- ✅ **Error resolution** (TypeScript errors fixed, lint clean)
+
+**GitHub Projects Board Management:**
+- **CCI Command** auto-assigns new issues to "Backlog"
+- **Manual movement** initially (user decides lane changes)
+- **Semi-automatic evolution** (Claude suggests moves, user approves)
+- **Eventual automation** (Claude moves based on clear task status)
+
+**Board Movement Guidelines:**
+```bash
+# When starting work on issue
+gh project item-edit --project-id XXX --id XXX --field-id status --value "In Progress"
+
+# When ready for review  
+gh project item-edit --project-id XXX --id XXX --field-id status --value "Review"
+
+# When completed
+gh project item-edit --project-id XXX --id XXX --field-id status --value "Done"
+```
+
+**Issue Creation Integration:**
+- `/project:cci [feature idea]` → Auto-creates GitHub issue → Auto-assigns to Backlog
+- Issues include: Problem statement, solution vision, technical requirements, testing strategy
+- Manufacturing review criteria automatically applied
+
 ## Essential Commands
 
 ```bash
