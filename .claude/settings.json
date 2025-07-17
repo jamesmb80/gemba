@@ -1,1 +1,30 @@
-{}
+{
+  "hooks": {
+    "preToolUse": ".claude/hooks/pre_tool_use.py",
+    "postToolUse": ".claude/hooks/post_tool_use.py",
+    "stop": ".claude/hooks/stop.py",
+    "notification": ".claude/hooks/notification.py"
+  },
+  "notifications": {
+    "enabled": true,
+    "soundVolume": 0.5,
+    "attentionVolume": 0.7,
+    "sounds": {
+      "default": "/System/Library/Sounds/Glass.aiff",
+      "attention": "/System/Library/Sounds/Hero.aiff",
+      "error": "/System/Library/Sounds/Basso.aiff",
+      "success": "/System/Library/Sounds/Glass.aiff"
+    }
+  },
+  "logging": {
+    "transcripts": true,
+    "dailyLogs": true,
+    "maxLogEntries": 1000,
+    "logDirectory": ".claude/hooks/logs"
+  },
+  "safety": {
+    "blockDangerousCommands": true,
+    "protectEnvironmentFiles": true,
+    "requireBackupForBulkOperations": true
+  }
+}

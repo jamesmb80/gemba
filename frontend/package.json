@@ -14,13 +14,21 @@
     "test": "jest",
     "test:unit": "jest --coverage",
     "test:e2e": "playwright test",
-    "test:a11y": "jest --testPathPattern=a11y"
+    "test:a11y": "jest --testPathPattern=a11y",
+    "test:chunking": "jest --testPathPattern=chunking",
+    "test:chunking:integration": "jest --testPathPattern=chunking.*integration",
+    "test:chunking:performance": "jest --testPathPattern=chunking.*performance",
+    "test:integration:pipeline": "ts-node scripts/run-integration-tests.ts",
+    "test:integration:chunking": "jest src/lib/__tests__/integration/vector-chunking-pipeline.test.ts",
+    "test:performance:full-pipeline": "jest src/lib/__tests__/integration/vector-chunking-pipeline.test.ts --testNamePattern='Performance and Scalability'",
+    "chunking:rollback": "ts-node scripts/chunking-rollback.ts",
+    "chunking:metrics": "ts-node scripts/chunking-metrics.ts",
+    "chunking:errors": "ts-node scripts/chunking-errors.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
     "@supabase/supabase-js": "^2.50.2",
     "@tailwindcss/postcss": "^4.1.11",
-    "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "axios": "^1.6.2",
@@ -41,10 +49,12 @@
     "@babel/preset-env": "^7.27.2",
     "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "^7.27.1",
+    "@playwright/test": "^1.54.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.14",
     "@typescript-eslint/eslint-plugin": "^6.12.0",
     "@typescript-eslint/parser": "^6.12.0",
     "autoprefixer": "^10.0.1",
@@ -62,6 +72,7 @@
     "prettier": "^3.1.0",
     "tailwindcss": "^3.3.0",
     "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

@@ -38,7 +38,7 @@ export class ContextService {
   static async getContextForQuery(
     machineId: string,
     userQuery: string,
-    currentSessionId?: string
+    currentSessionId?: string,
   ): Promise<ContextData> {
     const [manualExcerpts, chatHistory] = await Promise.all([
       this.getRelevantManualExcerpts(machineId, userQuery),
@@ -59,7 +59,7 @@ export class ContextService {
    */
   private static async getRelevantManualExcerpts(
     machineId: string,
-    userQuery: string
+    userQuery: string,
   ): Promise<ManualExcerpt[]> {
     try {
       // Get all documents for the machine with extracted text
@@ -84,11 +84,7 @@ export class ContextService {
       const excerpts: ManualExcerpt[] = [];
 
       for (const doc of documents) {
-        const relevantExcerpts = this.findRelevantExcerpts(
-          doc,
-          keywords,
-          userQuery
-        );
+        const relevantExcerpts = this.findRelevantExcerpts(doc, keywords, userQuery);
         excerpts.push(...relevantExcerpts);
       }
 
@@ -108,7 +104,7 @@ export class ContextService {
   private static async getRelevantChatHistory(
     machineId: string,
     userQuery: string,
-    currentSessionId?: string
+    currentSessionId?: string,
   ): Promise<ChatHistorySummary[]> {
     try {
       // Get recent chat sessions for the machine (excluding current session)
@@ -139,11 +135,7 @@ export class ContextService {
           continue;
         }
 
-        const summary = this.createChatHistorySummary(
-          session,
-          messages,
-          keywords
-        );
+        const summary = this.createChatHistorySummary(session, messages, keywords);
 
         if (summary && summary.relevantMessages.length > 0) {
           historySummaries.push(summary);
@@ -165,19 +157,69 @@ export class ContextService {
   private static extractKeywords(query: string): string[] {
     // Remove common words and extract meaningful terms
     const stopWords = new Set([
-      'the', 'is', 'at', 'which', 'on', 'and', 'or', 'but', 'in', 'with',
-      'a', 'an', 'as', 'are', 'was', 'were', 'been', 'be', 'have', 'has',
-      'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may',
-      'might', 'must', 'can', 'i', 'you', 'he', 'she', 'it', 'we', 'they',
-      'my', 'your', 'his', 'her', 'its', 'our', 'their', 'this', 'that',
-      'these', 'those', 'what', 'how', 'when', 'where', 'why', 'who'
+      'the',
+      'is',
+      'at',
+      'which',
+      'on',
+      'and',
+      'or',
+      'but',
+      'in',
+      'with',
+      'a',
+      'an',
+      'as',
+      'are',
+      'was',
+      'were',
+      'been',
+      'be',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'must',
+      'can',
+      'i',
+      'you',
+      'he',
+      'she',
+      'it',
+      'we',
+      'they',
+      'my',
+      'your',
+      'his',
+      'her',
+      'its',
+      'our',
+      'their',
+      'this',
+      'that',
+      'these',
+      'those',
+      'what',
+      'how',
+      'when',
+      'where',
+      'why',
+      'who',
     ]);
 
     return query
       .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
-      .filter(word => word.length > 2 && !stopWords.has(word))
+      .filter((word) => word.length > 2 && !stopWords.has(word))
       .slice(0, 10); // Limit to 10 keywords
   }
 
@@ -187,7 +229,7 @@ export class ContextService {
   private static findRelevantExcerpts(
     document: Document,
     keywords: string[],
-    originalQuery: string
+    originalQuery: string,
   ): ManualExcerpt[] {
     if (!document.extracted_text) {
       return [];
@@ -203,17 +245,13 @@ export class ContextService {
         const startIndex = Math.max(0, keywordIndex - this.EXCERPT_LENGTH / 2);
         const endIndex = Math.min(text.length, keywordIndex + this.EXCERPT_LENGTH / 2);
         const excerpt = document.extracted_text.substring(startIndex, endIndex);
-        
+
         // Calculate relevance score based on keyword frequency and position
-        const keywordCount = keywords.filter(k => 
-          excerpt.toLowerCase().includes(k.toLowerCase())
+        const keywordCount = keywords.filter((k) =>
+          excerpt.toLowerCase().includes(k.toLowerCase()),
         ).length;
-        
-        const relevanceScore = this.calculateExcerptRelevance(
-          excerpt,
-          keywords,
-          originalQuery
-        );
+
+        const relevanceScore = this.calculateExcerptRelevance(excerpt, keywords, originalQuery);
 
         excerpts.push({
           documentId: document.id,
@@ -226,13 +264,11 @@ export class ContextService {
     }
 
     // Remove duplicates and return top excerpts
-    const uniqueExcerpts = excerpts.filter((excerpt, index, self) => 
-      index === self.findIndex(e => e.excerpt === excerpt.excerpt)
+    const uniqueExcerpts = excerpts.filter(
+      (excerpt, index, self) => index === self.findIndex((e) => e.excerpt === excerpt.excerpt),
     );
 
-    return uniqueExcerpts
-      .sort((a, b) => b.relevanceScore - a.relevanceScore)
-      .slice(0, 3); // Max 3 excerpts per document
+    return uniqueExcerpts.sort((a, b) => b.relevanceScore - a.relevanceScore).slice(0, 3); // Max 3 excerpts per document
   }
 
   /**
@@ -241,29 +277,30 @@ export class ContextService {
   private static calculateExcerptRelevance(
     excerpt: string,
     keywords: string[],
-    originalQuery: string
+    originalQuery: string,
   ): number {
     const lowerExcerpt = excerpt.toLowerCase();
     const lowerQuery = originalQuery.toLowerCase();
-    
+
     let score = 0;
-    
+
     // Exact query match gets highest score
     if (lowerExcerpt.includes(lowerQuery)) {
       score += 100;
     }
-    
+
     // Keyword matches
     for (const keyword of keywords) {
       const keywordCount = (lowerExcerpt.match(new RegExp(keyword, 'g')) || []).length;
       score += keywordCount * 10;
     }
-    
+
     // Bonus for technical terms (error codes, model numbers, etc.)
-    const technicalTerms = /\b(error|code|model|part|serial|maintenance|repair|troubleshoot|fix|problem|issue)\b/gi;
+    const technicalTerms =
+      /\b(error|code|model|part|serial|maintenance|repair|troubleshoot|fix|problem|issue)\b/gi;
     const technicalMatches = (lowerExcerpt.match(technicalTerms) || []).length;
     score += technicalMatches * 5;
-    
+
     return score;
   }
 
@@ -273,37 +310,37 @@ export class ContextService {
   private static createChatHistorySummary(
     session: ChatSession,
     messages: ChatMessage[],
-    keywords: string[]
+    keywords: string[],
   ): ChatHistorySummary | null {
     if (messages.length === 0) {
       return null;
     }
 
     const relevantMessages = messages
-      .filter(msg => {
+      .filter((msg) => {
         const lowerText = msg.text.toLowerCase();
-        return keywords.some(keyword => lowerText.includes(keyword.toLowerCase()));
+        return keywords.some((keyword) => lowerText.includes(keyword.toLowerCase()));
       })
-      .map(msg => msg.text);
+      .map((msg) => msg.text);
 
     if (relevantMessages.length === 0) {
       return null;
     }
 
     // Find potential resolution (last AI message in the session)
-    const lastAIMessage = messages
-      .filter(msg => msg.sender === 'ai')
-      .pop();
+    const lastAIMessage = messages.filter((msg) => msg.sender === 'ai').pop();
 
-    const resolution = lastAIMessage && lastAIMessage.text && lastAIMessage.text.length > 100 
-      ? lastAIMessage.text.substring(0, 200) + '...'
-      : lastAIMessage?.text;
+    const resolution =
+      lastAIMessage && lastAIMessage.text && lastAIMessage.text.length > 100
+        ? lastAIMessage.text.substring(0, 200) + '...'
+        : lastAIMessage?.text;
 
     // Create a brief summary of the session
-    const userMessages = messages.filter(msg => msg.sender === 'user');
-    const aiMessages = messages.filter(msg => msg.sender === 'ai');
-    
-    const summary = `Session with ${userMessages.length} user messages and ${aiMessages.length} AI responses. ` +
+    const userMessages = messages.filter((msg) => msg.sender === 'user');
+    const aiMessages = messages.filter((msg) => msg.sender === 'ai');
+
+    const summary =
+      `Session with ${userMessages.length} user messages and ${aiMessages.length} AI responses. ` +
       `Topics discussed: ${keywords.join(', ')}`;
 
     return {
@@ -320,11 +357,11 @@ export class ContextService {
    */
   private static calculateRelevanceScore(
     manualExcerpts: ManualExcerpt[],
-    chatHistory: ChatHistorySummary[]
+    chatHistory: ChatHistorySummary[],
   ): number {
     const manualScore = manualExcerpts.reduce((sum, excerpt) => sum + excerpt.relevanceScore, 0);
     const historyScore = chatHistory.length * 20; // 20 points per relevant historical session
-    
+
     return manualScore + historyScore;
   }
 
@@ -359,8 +396,10 @@ export class ContextService {
     if (formattedContext) {
       formattedContext = '## CONTEXT INFORMATION:' + formattedContext;
       formattedContext += '\n\n## INSTRUCTIONS:\n';
-      formattedContext += 'Use the above context information to provide more accurate and helpful responses. ';
-      formattedContext += 'Reference specific manual sections or previous solutions when applicable. ';
+      formattedContext +=
+        'Use the above context information to provide more accurate and helpful responses. ';
+      formattedContext +=
+        'Reference specific manual sections or previous solutions when applicable. ';
       formattedContext += 'If the context contains a solution to a similar problem, mention it.';
     }
 

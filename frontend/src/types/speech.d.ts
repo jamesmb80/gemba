@@ -42,7 +42,7 @@ declare var SpeechRecognition: {
   new (): SpeechRecognition;
 };
 
-declare var webkitSpeechRecognition: {
+declare let webkitSpeechRecognition: {
   prototype: SpeechRecognition;
   new (): SpeechRecognition;
 };

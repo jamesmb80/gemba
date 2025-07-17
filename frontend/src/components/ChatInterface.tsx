@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { MicIcon, SendIcon, ArrowLeftIcon, VolumeIcon, Volume2Icon, BookOpenIcon, HistoryIcon } from 'lucide-react';
+import {
+  MicIcon,
+  SendIcon,
+  ArrowLeftIcon,
+  VolumeIcon,
+  Volume2Icon,
+  BookOpenIcon,
+  HistoryIcon,
+} from 'lucide-react';
 import { LoadingSpinner } from './ui/LoadingSpinner';
 import {
   getChatSessions,
@@ -94,12 +102,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ machine, onBack })
       };
       const savedAiMsg = await addChatMessage(aiMsg);
       setMessages((prev) => [...prev, savedAiMsg]);
-      
+
       // Update context sources if available
       if (aiResponse.sources) {
         setContextSources(aiResponse.sources);
       }
-      
+
       // Text-to-speech if enabled
       if (audioEnabled) {
         const utterance = new window.SpeechSynthesisUtterance(aiResponse.text);
@@ -125,32 +133,32 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ machine, onBack })
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    
+
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = 'en-US';
-    
+
     recognition.onstart = () => {
       setInputValue('');
     };
-    
+
     recognition.onresult = (event) => {
       if (event.results.length > 0) {
         const transcript = event.results[0][0].transcript;
         setInputValue(transcript);
       }
     };
-    
+
     recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
       setError(`Speech recognition error: ${event.error}`);
       setIsRecording(false);
     };
-    
+
     recognition.onend = () => {
       setIsRecording(false);
     };
-    
+
     recognition.start();
   };
 
@@ -211,7 +219,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ machine, onBack })
           {audioEnabled ? <Volume2Icon size={20} /> : <VolumeIcon size={20} />}
         </button>
       </div>
-      
+
       {/* Context sources indicator */}
       {contextSources.length > 0 && (
         <div className="bg-blue-50 border-l-4 border-blue-400 p-3 text-sm">
@@ -219,12 +227,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ machine, onBack })
             <BookOpenIcon size={16} className="mr-2 text-blue-600" />
             <span className="font-medium text-blue-800">Context from manuals:</span>
           </div>
-          <div className="mt-1 text-blue-700">
-            {contextSources.join(', ')}
-          </div>
+          <div className="mt-1 text-blue-700">{contextSources.join(', ')}</div>
         </div>
       )}
-      
+
       {/* Chat messages */}
       <div className="flex-1 bg-gray-50 p-4 overflow-y-auto">
         {error && <div className="mb-4 text-red-600 font-semibold">{error}</div>}

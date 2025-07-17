@@ -25,6 +25,22 @@
 
 ## Fix History
 
+## 2025-07-07 - bugfix - ATTEMPTED ⏳
+
+**Problem:** [TO BE UPDATED BY CLAUDE CODE]
+**Root Cause:** [TO BE UPDATED BY CLAUDE CODE]
+**Attempted Solution:** [TO BE UPDATED BY CLAUDE CODE]
+**Reasoning:** [TO BE UPDATED BY CLAUDE CODE]
+**Code Changes:** /path/to/bugfix.ts
+**Testing Steps:** [TO BE UPDATED BY CLAUDE CODE]
+**Outcome:** [TO BE UPDATED]
+**Side Effects:** [TO BE UPDATED]
+**Lessons Learned:** [TO BE UPDATED]
+**Next Steps:** [TO BE UPDATED]
+
+---
+
+
 ## 2025-06-30 - Project Cleanup - FAILED ❌
 
 **Problem:** Wanted to clean up duplicate files and debug scripts from development
@@ -658,5 +674,23 @@
 - Monitor PDF functionality with real user documents
 - Consider adding automated linting/formatting to prevent future cruft
 - Implement proper testing for PDF functionality
+
+---
+
+## 2024-07-01 - Dev Servers Restart - ATTEMPTED ⏳
+
+**Problem:** Need to ensure all development servers (Supabase, Playwright, etc.) are running fresh instances to avoid stale state or port conflicts.
+**Root Cause:** Dev servers may have stale processes, port conflicts, or require a restart after config/code changes.
+**Attempted Solution:** Plan to kill all running dev server processes (Supabase, Playwright, and any others found), then restart them using the commands/configs in `.mcp.json`.
+**Reasoning:** Restarting all dev servers ensures a clean development environment and applies any recent changes.
+**Code Changes:** No code changes; process management only.
+**Testing Steps:**
+1. Identify and kill all running dev server processes (Supabase, Playwright, etc.).
+2. Restart each dev server using the appropriate command from `.mcp.json`.
+3. Verify that each server starts successfully and is accessible.
+**Outcome:** [TO BE UPDATED]
+**Side Effects:** [TO BE UPDATED]
+**Lessons Learned:** [TO BE UPDATED]
+**Next Steps:** [TO BE UPDATED]
 
 ---

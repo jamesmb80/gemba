@@ -55,3 +55,4 @@ dev-debug.log
 # MCP configuration files (contain API keys)
 .mcp.json
 .cursor/mcp.json
+.vercel

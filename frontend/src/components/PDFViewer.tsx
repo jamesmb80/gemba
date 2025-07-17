@@ -20,12 +20,12 @@ export default function PDFViewer({
   }, [file, onLoadSuccess]);
 
   return (
-    <div 
-      style={{ 
-        transform: `scale(${zoomLevel / 100})`, 
+    <div
+      style={{
+        transform: `scale(${zoomLevel / 100})`,
         transformOrigin: 'top center',
         width: '100%',
-        height: '600px'
+        height: '600px',
       }}
     >
       <iframe
@@ -34,7 +34,7 @@ export default function PDFViewer({
           width: '100%',
           height: '100%',
           border: 'none',
-          borderRadius: '4px'
+          borderRadius: '4px',
         }}
         title="PDF Viewer"
         onLoad={() => {
@@ -46,7 +46,7 @@ export default function PDFViewer({
         }}
       >
         <div className="text-center p-4 text-red-600">
-          Your browser does not support PDF viewing. 
+          Your browser does not support PDF viewing.
           <a href={file} target="_blank" rel="noopener noreferrer" className="underline ml-1">
             Click here to download the PDF
           </a>

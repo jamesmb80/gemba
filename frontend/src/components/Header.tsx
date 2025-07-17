@@ -14,7 +14,13 @@ interface HeaderProps {
   isAuthenticated?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ breadcrumbs, onNavigate, loginButton, onLogout, isAuthenticated }) => {
+export const Header: React.FC<HeaderProps> = ({
+  breadcrumbs,
+  onNavigate,
+  loginButton,
+  onLogout,
+  isAuthenticated,
+}) => {
   return (
     <header className="bg-blue-900 text-white p-4 shadow-md">
       <div className="flex justify-between items-center">
