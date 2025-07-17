@@ -25,6 +25,11 @@ export async function GET(req: NextRequest, { params }: { params: { path: string
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
+  
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    return NextResponse.json({ error: 'Missing Supabase configuration' }, { status: 500 });
+  }
+  
   const supabase = createSupabaseServerClient(supabaseUrl, supabaseServiceRoleKey);
 
   // Generate a signed URL for the PDF (60 minute expiry)
